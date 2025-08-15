@@ -1,0 +1,32 @@
+export const initialGames = [
+  {
+    id: 1,
+    title: 'The Witcher 3',
+    genre: 'RPG',
+    platform: 'PC',
+    releaseDate: '2015-05-19',
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/0/0c/Witcher_3_cover_art.jpg',
+    status: 'completed',
+    reviewed: true,
+  },
+  {
+    id: 2,
+    title: 'God of War',
+    genre: 'Action',
+    platform: 'PS5',
+    releaseDate: '2018-04-20',
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/a/a7/God_of_War_4_cover.jpg',
+    status: 'started',
+    reviewed: false,
+  },
+  {
+    id: 3,
+    title: 'Hades',
+    genre: 'Rogue-like',
+    platform: 'Switch',
+    releaseDate: '2020-09-17',
+    coverImage: 'https://upload.wikimedia.org/wikipedia/en/e/e6/Hades_cover_art.jpg',
+    status: 'not-started',
+    reviewed: false,
+  },
+];
