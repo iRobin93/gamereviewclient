@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
-
+import { BASE_URL } from '../model/generalData'; 
+import {getAchievements} from '../api/achievementApi'
 const AchievementContext = createContext();
 
 export function AchievementProvider({ children }) {
@@ -11,8 +12,9 @@ export function AchievementProvider({ children }) {
   useEffect(() => {
     const fetchAchievements = async () => {
       try {
-        const response = await axios.get('https://your-api.com/achievements'); // replace with your URL
-        setAchievements(response.data);
+       const responseData = await getAchievements();
+
+        setAchievements(responseData);
       } catch (err) {
         console.error('Failed to fetch achievements:', err);
         setError(err);

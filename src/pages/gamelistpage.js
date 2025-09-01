@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
+import {} from '../pages/achievementPage'
 
 function GameListPage() {
   const { user } = useUser();
@@ -55,7 +56,9 @@ function GameListPage() {
 
 
 
-
+  const handleAchievement = () => {
+   navigate(`/achievementpage`);
+  };
 
   const handleAddGame = () => {
    navigate(`/addgamepage`);
@@ -81,7 +84,7 @@ function GameListPage() {
   return (
     <div className="game-list-container">
       <h2>🎮 Game List</h2>
-
+      <button onClick={handleAchievement}>Achievements </button>
       <input
         type="text"
         placeholder="Filter by title..."

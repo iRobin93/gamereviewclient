@@ -1,6 +1,6 @@
 import axios from 'axios';
-
-const BASE_URL = 'http://localhost:8080/api'; // replace with actual URL
+import { BASE_URL } from '../model/generalData'; 
+ // replace with actual URL
 
 export const getUsers = async () => {
   const response = await axios.get(`${BASE_URL}/User`);

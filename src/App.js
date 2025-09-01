@@ -4,6 +4,7 @@ import './App.css';
 import GameListPage from './pages/gamelistpage';
 import ReviewPage from './pages/reviewpage';
 import AddGamePage from './pages/addGamePage';
+import AchivevementPage from './pages/achievementPage';
 import { UserProvider } from './context/UserContext';
 import { useUser } from './context/UserContext';
 import { GameProvider } from './context/GameContext';
@@ -86,6 +87,7 @@ function App() {
           <Route path="/gamelistpage" element={<GameListPage />} />
           <Route path="/reviewpage/:id" element={<ReviewPage />} />
           <Route path="/addgamepage" element={<AddGamePage />} />
+          <Route path="/achievementpage" element={<AchivevementPage />} />
         </Routes>
       </Router>
       </GameProvider>
