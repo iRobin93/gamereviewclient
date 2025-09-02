@@ -1,0 +1,53 @@
+.achievement-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.back-button {
+  margin-bottom: 2rem;
+  padding: 0.5rem 1rem;
+  background-color: #ddd;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.achievement-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.achievement-card {
+  background: linear-gradient(135deg, #f0f0f0, #ffffff);
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  width: 220px;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.achievement-card:hover {
+  transform: scale(1.05);
+}
+
+.achievement-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.achievement-label {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: left;
+  flex: 1;
+}

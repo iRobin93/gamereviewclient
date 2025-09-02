@@ -9,6 +9,7 @@ import { UserProvider } from './context/UserContext';
 import { useUser } from './context/UserContext';
 import { GameProvider } from './context/GameContext';
 import { UserGameProvider } from './context/UserGameContext';
+import { AchievementProvider } from './context/AchievementContext';
 import { getUsers } from './api/usersApi';
 import { useEffect, useState } from 'react';
 
@@ -37,7 +38,7 @@ function LoginPage() {
   const handleLogin = (e) => {
     e.preventDefault();
 
-   const userObject = allUsers.find(
+    const userObject = allUsers.find(
       u => u.username === username && u.password === password
     );
 
@@ -79,19 +80,21 @@ function App() {
 
   return (
     <UserProvider>
-      <UserGameProvider>
-      <GameProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LoginPage />} />
-          <Route path="/gamelistpage" element={<GameListPage />} />
-          <Route path="/reviewpage/:id" element={<ReviewPage />} />
-          <Route path="/addgamepage" element={<AddGamePage />} />
-          <Route path="/achievementpage" element={<AchivevementPage />} />
-        </Routes>
-      </Router>
-      </GameProvider>
-      </UserGameProvider>
+      <AchievementProvider>
+        <UserGameProvider>
+          <GameProvider>
+            <Router>
+              <Routes>
+                <Route path="/" element={<LoginPage />} />
+                <Route path="/gamelistpage" element={<GameListPage />} />
+                <Route path="/reviewpage/:id" element={<ReviewPage />} />
+                <Route path="/addgamepage" element={<AddGamePage />} />
+                <Route path="/achievementpage" element={<AchivevementPage />} />
+              </Routes>
+            </Router>
+          </GameProvider>
+        </UserGameProvider>
+      </AchievementProvider>
     </UserProvider>
   );
 }
