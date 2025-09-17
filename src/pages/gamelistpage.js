@@ -68,16 +68,20 @@ function GameListPage() {
     navigate(`/reviewpage/${id}`);
   };
 
-  const userGameIds = usergames
-    .filter(userGame => userGame.user_id === user.id)
-    .map(userGame => userGame.game_id);
-
-  const filteredGames = games.filter(
-  game =>
-    userGameIds.includes(game.id) &&
-    game.title.toLowerCase().includes(filter.toLowerCase())
-);
-
+const filteredUserGames = usergames
+  .filter(userGame => userGame.user_id === user.id)
+  .filter(userGame => {
+    const game = games.find(g => g.id === userGame.game_id);
+    return game && game.title.toLowerCase().includes(filter.toLowerCase());
+  })
+  .map(userGame => {
+    const game = games.find(g => g.id === userGame.game_id);
+    return {
+      ...game,
+      status: userGame.status,
+      reviewed: userGame.reviewed
+    };
+  });
    
 
   
@@ -94,16 +98,16 @@ function GameListPage() {
       />
 
       <div className="game-list">
-        {filteredGames.map((game) => (
+        {filteredUserGames.map((game) => (
           <div key={game.id} className="game-item">
             <div className="status-column">
               <div title="Completion Status" className="status-cell">
                 {editingStatusId === game.id ? (
                   <div ref={dropdownRef} className="custom-dropdown">
                     <div className="dropdown-selected">
-                      {game.status === 'completed'
+                      {game.status === 'Finished'
                         ? '✅ Completed'
-                        : game.status === 'started'
+                        : game.status === 'InProgress'
                           ? '🕹️ Started'
                           : '❌ Not Started'}
                     </div>
@@ -133,9 +137,9 @@ function GameListPage() {
                     }
                     style={{ cursor: 'pointer' }}
                   >
-                    {game.status === 'completed'
+                    {game.status === 'Finished'
                       ? '✅'
-                      : game.status === 'started'
+                      : game.status === 'InProgress'
                         ? '🕹️'
                         : '❌'}
                   </span>
@@ -147,7 +151,7 @@ function GameListPage() {
               </div>
             </div>
 
-            <img src={game.coverImage} alt={game.title} className="cover-image" />
+            <img src={game.coverImageUrl} alt={game.title} className="cover-image" />
 
             <div className="game-details">
               <h3>{game.title}</h3>

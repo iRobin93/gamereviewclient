@@ -1,10 +1,9 @@
 import React, { createContext, useContext, useState } from 'react';
-import { initialUserGames } from '../model/userGamesData';
 
 const UserGameContext = createContext();
 
 export function UserGameProvider({ children }) {
-  const [usergames, setUserGames] = useState(initialUserGames);
+  const [usergames, setUserGames] = useState(null);
 
   return (
     <UserGameContext.Provider value={{ usergames, setUserGames }}>

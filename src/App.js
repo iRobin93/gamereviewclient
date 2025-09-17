@@ -7,10 +7,14 @@ import AddGamePage from './pages/addGamePage';
 import AchivevementPage from './pages/achievementPage';
 import { UserProvider } from './context/UserContext';
 import { useUser } from './context/UserContext';
+import { useGames } from './context/GameContext';
+import { useUserGames } from './context/UserGameContext';
 import { GameProvider } from './context/GameContext';
 import { UserGameProvider } from './context/UserGameContext';
 import { AchievementProvider } from './context/AchievementContext';
 import { getUsers } from './api/usersApi';
+import { getUserGames } from './api/userGamesApi';
+import { getGames } from './api/gameApi';
 import { useEffect, useState } from 'react';
 
 function LoginPage() {
@@ -19,7 +23,9 @@ function LoginPage() {
   const [allUsers, setAllUsers] = useState([]);
   const navigate = useNavigate();
   const { setUser } = useUser();
-
+  const { setUserGames } = useUserGames();
+  const { setGames } = useGames();
+ 
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -35,7 +41,27 @@ function LoginPage() {
   }, []);
 
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
+
+
+    const fetchGames = async (id) => {
+      try {
+        const Games = await getGames();
+        setGames(Games);
+      } catch (error) {
+        console.error('Failed to fetch Games:', error);
+      }
+    };
+
+    const fetchUserGames = async (id) => {
+      try {
+        const userGames = await getUserGames(id);
+        setUserGames(userGames);
+      } catch (error) {
+        console.error('Failed to fetch userGames:', error);
+      }
+    };
+
     e.preventDefault();
 
     const userObject = allUsers.find(
@@ -44,6 +70,8 @@ function LoginPage() {
 
     if (userObject) {
       setUser(userObject);
+      await fetchGames()
+      await fetchUserGames(userObject.id);
       navigate(`/gamelistpage`);
     } else {
       alert('Invalid credentials');
