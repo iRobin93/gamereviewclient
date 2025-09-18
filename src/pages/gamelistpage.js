@@ -5,24 +5,27 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
-import {} from '../pages/achievementPage'
+import { useGameGenres } from '../context/GameGenreContext';
+import { } from '../pages/achievementPage'
 
 function GameListPage() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
   const { games, setGames } = useGames();
-  const {usergames, setUserGames} = useUserGames();
+  const { gamegenres, setGameGenres } = useGameGenres();
   const [filter, setFilter] = useState('');
   const dropdownRef = useRef(null);
+
+
   useEffect(() => {
     if (!user) {
       navigate('/');
     }
   }, [user, navigate]);
 
-  
-   useEffect(() => {
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         dropdownRef.current &&
@@ -54,37 +57,47 @@ function GameListPage() {
   };
 
 
+  const getGameGenres = async (gameId) => {
 
+        const gameGenresList = await Promise.all(
+          userGames.map(game => getGameGenres(game.game_id))
+        );
+
+    const GenreList = await Promise.all(
+      genres.map(genre => getGenres(gameId))
+    );
+    return "Test";
+  }
 
   const handleAchievement = () => {
-   navigate(`/achievementpage`);
+    navigate(`/achievementpage`);
   };
 
   const handleAddGame = () => {
-   navigate(`/addgamepage`);
+    navigate(`/addgamepage`);
   };
 
   const handleReview = (id) => {
     navigate(`/reviewpage/${id}`);
   };
 
-const filteredUserGames = usergames
-  .filter(userGame => userGame.user_id === user.id)
-  .filter(userGame => {
-    const game = games.find(g => g.id === userGame.game_id);
-    return game && game.title.toLowerCase().includes(filter.toLowerCase());
-  })
-  .map(userGame => {
-    const game = games.find(g => g.id === userGame.game_id);
-    return {
-      ...game,
-      status: userGame.status,
-      reviewed: userGame.reviewed
-    };
-  });
-   
+  const filteredUserGames = usergames
+    .filter(userGame => userGame.user_id === user.id)
+    .filter(userGame => {
+      const game = games.find(g => g.id === userGame.game_id);
+      return game && game.title.toLowerCase().includes(filter.toLowerCase());
+    })
+    .map(userGame => {
+      const game = games.find(g => g.id === userGame.game_id);
+      return {
+        ...game,
+        status: userGame.status,
+        reviewed: userGame.reviewed
+      };
+    });
 
-  
+
+
   return (
     <div className="game-list-container">
       <h2>🎮 Game List</h2>
@@ -155,7 +168,7 @@ const filteredUserGames = usergames
 
             <div className="game-details">
               <h3>{game.title}</h3>
-              <p><strong>Genre:</strong> {game.genre}</p>
+              <p><strong>Genre:</strong> {getGameGenres(game.id)}</p>
               <p><strong>Platform:</strong> {game.platform}</p>
               <p><strong>Release Date:</strong> {game.releaseDate}</p>
             </div>
