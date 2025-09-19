@@ -6,16 +6,18 @@ import { useUser } from '../context/UserContext';
 import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
 import { useGameGenres } from '../context/GameGenreContext';
-import { } from '../pages/achievementPage'
+import { useGenres } from '../context/GenreContext';
 
 function GameListPage() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
   const { games, setGames } = useGames();
+  const {usergames, setUserGames} = useUserGames();
   const { gamegenres, setGameGenres } = useGameGenres();
   const [filter, setFilter] = useState('');
   const dropdownRef = useRef(null);
+  const {genres} = useGenres();
 
 
   useEffect(() => {
@@ -50,23 +52,23 @@ function GameListPage() {
 
 
   const updateStatus = (id, newStatus) => {
-    setGames((prev) =>
+    setUserGames((prev) =>
       prev.map((g) => (g.id === id ? { ...g, status: newStatus } : g))
     );
     setEditingStatusId(null); // close dropdown
   };
 
 
-  const getGameGenres = async (gameId) => {
+  const getGameGenres = (gameId) => {
 
-        const gameGenresList = await Promise.all(
-          userGames.map(game => getGameGenres(game.game_id))
-        );
+      const genreLinks = gamegenres.filter(g => g.game_id === gameId);
 
-    const GenreList = await Promise.all(
-      genres.map(genre => getGenres(gameId))
-    );
-    return "Test";
+      const genreNames = genreLinks.map(link => {
+        const genre = genres.find(g => g.id === link.genre_id);
+        return genre ? genre.genreName : null;
+      }).filter(name => name !== null);
+
+      return genreNames.join(', ');
   }
 
   const handleAchievement = () => {
@@ -126,19 +128,19 @@ function GameListPage() {
                     </div>
                     <div
                       className="dropdown-option"
-                      onClick={() => updateStatus(game.id, 'not-started')}
+                      onClick={() => updateStatus(game.id, 'NotStarted')}
                     >
                       ❌ Not Started
                     </div>
                     <div
                       className="dropdown-option"
-                      onClick={() => updateStatus(game.id, 'started')}
+                      onClick={() => updateStatus(game.id, 'InProgress')}
                     >
                       🕹️ Started
                     </div>
                     <div
                       className="dropdown-option"
-                      onClick={() => updateStatus(game.id, 'completed')}
+                      onClick={() => updateStatus(game.id, 'Finished')}
                     >
                       ✅ Completed
                     </div>

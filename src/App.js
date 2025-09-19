@@ -69,8 +69,7 @@ function LoginPage() {
         const gameGenresList = await Promise.all(
           userGames.map(game => getGameGenres(game.game_id))
         );
-
-        setGameGenres(gameGenresList);
+        setGameGenres(gameGenresList.flat());
       } catch (error) {
         console.error('Failed to fetch GameGenres:', error);
       }
