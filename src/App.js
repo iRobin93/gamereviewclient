@@ -6,21 +6,27 @@ import ReviewPage from './pages/reviewpage';
 import AddGamePage from './pages/addGamePage';
 import AchivevementPage from './pages/achievementPage';
 import { UserProvider } from './context/UserContext';
+import { PlatformProvider } from './context/PlatformContext';
 import { GenreProvider } from './context/GenreContext';
 import { useUser } from './context/UserContext';
 import { useGames } from './context/GameContext';
 import { useGameGenres } from './context/GameGenreContext';
 import { useGenres } from './context/GenreContext';
+import { usePlatforms } from './context/PlatformContext';
+import { useGamePlatforms } from './context/GamePlatformContext';
 import { useUserGames } from './context/UserGameContext';
 import { GameProvider } from './context/GameContext';
 import { UserGameProvider } from './context/UserGameContext';
 import { GameGenreProvider } from './context/GameGenreContext';
 import { AchievementProvider } from './context/AchievementContext';
+import { GamePlatformProvider } from './context/GamePlatformContext';
 import { getUsers } from './api/usersApi';
 import { getUserGames } from './api/userGamesApi';
 import { getGames } from './api/gameApi';
 import { getGameGenres } from './api/gameGenresApi';
+import { getGamePlatforms } from './api/gamePlatformApi';
 import { getGenres } from './api/genreApi';
+import { getPlatforms } from './api/platformApi';
 import { useEffect, useState } from 'react';
 
 function LoginPage() {
@@ -33,6 +39,8 @@ function LoginPage() {
   const { games, setGames } = useGames();
   const { setGenres } = useGenres();
   const { setGameGenres } = useGameGenres();
+  const { setPlatforms } = usePlatforms();
+  const { setGamePlatforms } = useGamePlatforms();
 
 
 
@@ -62,6 +70,15 @@ function LoginPage() {
       }
     };
 
+
+    const fetchPlatforms = async () => {
+      try {
+        const Platforms = await getPlatforms();
+        setPlatforms(Platforms);
+      } catch (error) {
+        console.error('Failed to fetch Platforms:', error);
+      }
+    };
 
     const fetchGameGenres = async (userGames) => {
       try {
@@ -95,6 +112,18 @@ function LoginPage() {
       return [];
     };
 
+    const fetchGamePlatforms = async (userGames) => {
+      try {
+
+        const gamePlatformsList = await Promise.all(
+          userGames.map(game => getGamePlatforms(game.game_id))
+        );
+        setGamePlatforms(gamePlatformsList.flat());
+      } catch (error) {
+        console.error('Failed to fetch GamePlatforms:', error);
+      }
+    };
+
     e.preventDefault();
 
     const userObject = allUsers.find(
@@ -105,7 +134,10 @@ function LoginPage() {
       setUser(userObject);
       await fetchGames();
       await fetchGenres();
+      await fetchPlatforms();
+
       const userGames = await fetchUserGames(userObject.id);
+      await fetchGamePlatforms(userGames);
       await fetchGameGenres(userGames);
       navigate(`/gamelistpage`);
     } else {
@@ -142,27 +174,33 @@ function LoginPage() {
 function App() {
 
   return (
-    <GameGenreProvider>
-      <GenreProvider>
-        <UserProvider>
-          <AchievementProvider>
-            <UserGameProvider>
-              <GameProvider>
-                <Router>
-                  <Routes>
-                    <Route path="/" element={<LoginPage />} />
-                    <Route path="/gamelistpage" element={<GameListPage />} />
-                    <Route path="/reviewpage/:id" element={<ReviewPage />} />
-                    <Route path="/addgamepage" element={<AddGamePage />} />
-                    <Route path="/achievementpage" element={<AchivevementPage />} />
-                  </Routes>
-                </Router>
-              </GameProvider>
-            </UserGameProvider>
-          </AchievementProvider>
-        </UserProvider>
-      </GenreProvider>
-    </GameGenreProvider>
+    <GamePlatformProvider>
+
+
+      <PlatformProvider>
+        <GameGenreProvider>
+          <GenreProvider>
+            <UserProvider>
+              <AchievementProvider>
+                <UserGameProvider>
+                  <GameProvider>
+                    <Router>
+                      <Routes>
+                        <Route path="/" element={<LoginPage />} />
+                        <Route path="/gamelistpage" element={<GameListPage />} />
+                        <Route path="/reviewpage/:id" element={<ReviewPage />} />
+                        <Route path="/addgamepage" element={<AddGamePage />} />
+                        <Route path="/achievementpage" element={<AchivevementPage />} />
+                      </Routes>
+                    </Router>
+                  </GameProvider>
+                </UserGameProvider>
+              </AchievementProvider>
+            </UserProvider>
+          </GenreProvider>
+        </GameGenreProvider>
+      </PlatformProvider>
+    </GamePlatformProvider>
   );
 }
 

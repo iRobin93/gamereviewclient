@@ -6,7 +6,9 @@ import { useUser } from '../context/UserContext';
 import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
 import { useGameGenres } from '../context/GameGenreContext';
+import { useGamePlatforms } from '../context/GamePlatformContext';
 import { useGenres } from '../context/GenreContext';
+import {usePlatforms} from '../context/PlatformContext'
 
 function GameListPage() {
   const { user } = useUser();
@@ -15,9 +17,11 @@ function GameListPage() {
   const { games, setGames } = useGames();
   const {usergames, setUserGames} = useUserGames();
   const { gamegenres, setGameGenres } = useGameGenres();
+  const { gameplatforms, setGamePlatforms } = useGamePlatforms();
   const [filter, setFilter] = useState('');
   const dropdownRef = useRef(null);
   const {genres} = useGenres();
+  const {platforms} = usePlatforms();
 
 
   useEffect(() => {
@@ -69,6 +73,18 @@ function GameListPage() {
       }).filter(name => name !== null);
 
       return genreNames.join(', ');
+  }
+
+   const getGamePlatforms = (gameId) => {
+
+      const gamePlatformList = gameplatforms.filter(g => g.game_id === gameId);
+
+      const platformNames = gamePlatformList.map(gamePlatform => {
+        const platform = platforms.find(p => p.id === gamePlatform.platform_id);
+        return platform ? platform.platformName : null;
+      }).filter(name => name !== null);
+
+      return platformNames.join(', ');
   }
 
   const handleAchievement = () => {
@@ -171,7 +187,7 @@ function GameListPage() {
             <div className="game-details">
               <h3>{game.title}</h3>
               <p><strong>Genre:</strong> {getGameGenres(game.id)}</p>
-              <p><strong>Platform:</strong> {game.platform}</p>
+              <p><strong>Platform:</strong> {getGamePlatforms(game.id)}</p>
               <p><strong>Release Date:</strong> {game.releaseDate}</p>
             </div>
 
