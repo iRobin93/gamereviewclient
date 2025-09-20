@@ -56,8 +56,8 @@ function GameListPage() {
 
 
   const updateStatus = (id, newStatus) => {
-    setUserGames((prev) =>
-      prev.map((g) => (g.id === id ? { ...g, status: newStatus } : g))
+    setUserGames((userGames) =>
+      userGames.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
     );
     setEditingStatusId(null); // close dropdown
   };
@@ -109,6 +109,7 @@ function GameListPage() {
       const game = games.find(g => g.id === userGame.game_id);
       return {
         ...game,
+        userGame_id: userGame.id,
         status: userGame.status,
         reviewed: userGame.reviewed
       };
@@ -129,34 +130,34 @@ function GameListPage() {
       />
 
       <div className="game-list">
-        {filteredUserGames.map((game) => (
-          <div key={game.id} className="game-item">
+        {filteredUserGames.map((mergedGame_UserGame) => (
+          <div key={mergedGame_UserGame.id} className="game-item">
             <div className="status-column">
               <div title="Completion Status" className="status-cell">
-                {editingStatusId === game.id ? (
+                {editingStatusId === mergedGame_UserGame.id ? (
                   <div ref={dropdownRef} className="custom-dropdown">
                     <div className="dropdown-selected">
-                      {game.status === 'Finished'
+                      {mergedGame_UserGame.status === 'Finished'
                         ? '✅ Completed'
-                        : game.status === 'InProgress'
+                        : mergedGame_UserGame.status === 'InProgress'
                           ? '🕹️ Started'
                           : '❌ Not Started'}
                     </div>
                     <div
                       className="dropdown-option"
-                      onClick={() => updateStatus(game.id, 'NotStarted')}
+                      onClick={() => updateStatus(mergedGame_UserGame.userGame_id, 'NotStarted')}
                     >
                       ❌ Not Started
                     </div>
                     <div
                       className="dropdown-option"
-                      onClick={() => updateStatus(game.id, 'InProgress')}
+                      onClick={() => updateStatus(mergedGame_UserGame.userGame_id, 'InProgress')}
                     >
                       🕹️ Started
                     </div>
                     <div
                       className="dropdown-option"
-                      onClick={() => updateStatus(game.id, 'Finished')}
+                      onClick={() => updateStatus(mergedGame_UserGame.userGame_id, 'Finished')}
                     >
                       ✅ Completed
                     </div>
@@ -164,13 +165,13 @@ function GameListPage() {
                 ) : (
                   <span
                     onClick={() =>
-                      setEditingStatusId(editingStatusId === game.id ? null : game.id)
+                      setEditingStatusId(editingStatusId === mergedGame_UserGame.id ? null : mergedGame_UserGame.id)
                     }
                     style={{ cursor: 'pointer' }}
                   >
-                    {game.status === 'Finished'
+                    {mergedGame_UserGame.status === 'Finished'
                       ? '✅'
-                      : game.status === 'InProgress'
+                      : mergedGame_UserGame.status === 'InProgress'
                         ? '🕹️'
                         : '❌'}
                   </span>
@@ -178,22 +179,22 @@ function GameListPage() {
 
               </div>
               <div title="Review Status">
-                {game.reviewed ? '📝' : '✏️'}
+                {mergedGame_UserGame.reviewed ? '📝' : '✏️'}
               </div>
             </div>
 
-            <img src={game.coverImageUrl} alt={game.title} className="cover-image" />
+            <img src={mergedGame_UserGame.coverImageUrl} alt={mergedGame_UserGame.title} className="cover-image" />
 
             <div className="game-details">
-              <h3>{game.title}</h3>
-              <p><strong>Genre:</strong> {getGameGenres(game.id)}</p>
-              <p><strong>Platform:</strong> {getGamePlatforms(game.id)}</p>
-              <p><strong>Release Date:</strong> {game.releaseDate}</p>
+              <h3>{mergedGame_UserGame.title}</h3>
+              <p><strong>Genre:</strong> {getGameGenres(mergedGame_UserGame.id)}</p>
+              <p><strong>Platform:</strong> {getGamePlatforms(mergedGame_UserGame.id)}</p>
+              <p><strong>Release Date:</strong> {mergedGame_UserGame.releaseDate}</p>
             </div>
 
             <div className="game-actions">
-              {!game.reviewed && (
-                <button onClick={() => handleReview(game.id)}>Review</button>
+              {!mergedGame_UserGame.reviewed && (
+                <button onClick={() => handleReview(mergedGame_UserGame.id)}>Review</button>
               )}
             </div>
           </div>
