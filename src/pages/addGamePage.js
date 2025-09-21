@@ -4,7 +4,9 @@ import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
 import { useUser } from '../context/UserContext';
 import { useGamePlatforms } from '../context/GamePlatformContext'
+import { useGameGenres } from '../context/GameGenreContext'
 import { usePlatforms } from '../context/PlatformContext'
+import { useGenres } from '../context/GenreContext'
 import axios from 'axios';
 
 function AddGamePage() {
@@ -17,7 +19,9 @@ function AddGamePage() {
   const { games, setGames } = useGames();
   const { usergames, setUserGames } = useUserGames();
   const { gameplatforms, setGamePlatforms } = useGamePlatforms();
-  const { platforms, setPlatforms } = usePlatforms();
+  const { platforms } = usePlatforms();
+  const { genres } = useGenres();
+  const { gamegenres, setGameGenres } = useGameGenres();
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
     setLoading(true);
@@ -66,22 +70,50 @@ function AddGamePage() {
     return id;
   };
 
-    const getPlatform_id = (rawGId) => {
+  const getNewGameGenreId = () => {
+    const existingIds = gamegenres.map(gamegenre => gamegenre.id);
+    let id = 1;
+    while (existingIds.includes(id)) {
+      id++;
+    }
+    return id;
+  };
+
+  const getPlatform_id = (rawGId) => {
     const platform = platforms.find(p => p.rawGId === rawGId)
     return platform.id;
   };
 
+  const getGenre_id = (rawGId) => {
+    const genre = genres.find(g => g.rawGId === rawGId)
+    return genre.id;
+  };
+
   const createGameplatforms = (rawGArrayOfPlatforms, gameId) => {
-    const gamePlatformList =  rawGArrayOfPlatforms.map(platform => {
-      return{
-            game_id: gameId,
-            id: getNewGamePlatformId(),
-            platform_id: getPlatform_id(platform.platform.id),
+    const gamePlatformList = rawGArrayOfPlatforms.map(platform => {
+      return {
+        game_id: gameId,
+        id: getNewGamePlatformId(),
+        platform_id: getPlatform_id(platform.platform.id),
       }
-      
-    }) 
+
+    })
     setGamePlatforms([...gameplatforms, ...gamePlatformList]);
-    
+
+  }
+
+
+  const createGameGenres = (rawGArrayOfGenres, gameId) => {
+    const gameGenreList = rawGArrayOfGenres.map(genre => {
+      return {
+        game_id: gameId,
+        id: getNewGameGenreId(),
+        genre_id: getGenre_id(genre.id),
+      }
+
+    })
+    setGameGenres([...gamegenres, ...gameGenreList]);
+
   }
 
   return (
@@ -144,6 +176,7 @@ function AddGamePage() {
                 }
                 setUserGames([...usergames, newUserGame])
                 createGameplatforms(game.platforms, newUserGame.game_id);
+                createGameGenres(game.genres, newUserGame.game_id)
                 navigate('/gamelistpage'); // 👈 Navigate after adding
               }}
             >

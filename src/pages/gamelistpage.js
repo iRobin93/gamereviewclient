@@ -14,10 +14,10 @@ function GameListPage() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
-  const { games, setGames } = useGames();
+  const { games } = useGames();
   const {usergames, setUserGames} = useUserGames();
-  const { gamegenres, setGameGenres } = useGameGenres();
-  const { gameplatforms, setGamePlatforms } = useGamePlatforms();
+  const { gamegenres } = useGameGenres();
+  const { gameplatforms } = useGamePlatforms();
   const [filter, setFilter] = useState('');
   const dropdownRef = useRef(null);
   const {genres} = useGenres();

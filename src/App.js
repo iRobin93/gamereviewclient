@@ -25,8 +25,8 @@ import { getUserGames } from './api/userGamesApi';
 import { getGames } from './api/gameApi';
 import { getGameGenres } from './api/gameGenresApi';
 import { getGamePlatforms } from './api/gamePlatformApi';
-import { getGenres } from './api/genreApi';
-import { getPlatforms } from './api/platformApi';
+import { getGenres, getGenresFromRawG, postRawGGenresToDatabase } from './api/genreApi';
+import { getPlatforms, getPlatformsFromRawG, postRawGPlatformsToDatabase } from './api/platformApi';
 import { useEffect, useState } from 'react';
 
 function LoginPage() {
@@ -35,8 +35,8 @@ function LoginPage() {
   const [allUsers, setAllUsers] = useState([]);
   const navigate = useNavigate();
   const { setUser } = useUser();
-  const { usergames, setUserGames } = useUserGames();
-  const { games, setGames } = useGames();
+  const { setUserGames } = useUserGames();
+  const { setGames } = useGames();
   const { setGenres } = useGenres();
   const { setGameGenres } = useGameGenres();
   const { setPlatforms } = usePlatforms();
@@ -73,10 +73,21 @@ function LoginPage() {
 
     const fetchPlatforms = async () => {
       try {
+        await fetchPlatformsFromRawG();
         const Platforms = await getPlatforms();
         setPlatforms(Platforms);
       } catch (error) {
         console.error('Failed to fetch Platforms:', error);
+      }
+    };
+
+
+    const fetchPlatformsFromRawG = async () => {
+      try {
+        const rawGPlatformssList = await getPlatformsFromRawG();
+        await postRawGPlatformsToDatabase(rawGPlatformssList.results);
+      } catch (error) {
+        console.error('Failed to fetch Genres:', error);
       }
     };
 
@@ -94,8 +105,18 @@ function LoginPage() {
 
     const fetchGenres = async () => {
       try {
+        await fetchGenresFromRawG();
         const Genres = await getGenres();
         setGenres(Genres);
+      } catch (error) {
+        console.error('Failed to fetch Genres:', error);
+      }
+    };
+
+    const fetchGenresFromRawG = async () => {
+      try {
+        const rawGGenresList = await getGenresFromRawG();
+        await postRawGGenresToDatabase(rawGGenresList.results);
       } catch (error) {
         console.error('Failed to fetch Genres:', error);
       }
