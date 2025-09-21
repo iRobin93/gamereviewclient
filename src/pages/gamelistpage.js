@@ -178,7 +178,9 @@ function GameListPage() {
                 )}
 
               </div>
-              <div title="Review Status">
+              <div title="Review Status" onClick={() =>
+                handleReview(mergedGame_UserGame.userGame_id)
+              }>
                 {mergedGame_UserGame.reviewed ? '📝' : '✏️'}
               </div>
             </div>
@@ -194,7 +196,7 @@ function GameListPage() {
 
             <div className="game-actions">
               {!mergedGame_UserGame.reviewed && (
-                <button onClick={() => handleReview(mergedGame_UserGame.id)}>Review</button>
+                <button onClick={() => handleReview(mergedGame_UserGame.userGame_id)}>Review</button>
               )}
             </div>
           </div>
