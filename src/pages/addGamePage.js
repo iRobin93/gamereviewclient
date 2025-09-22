@@ -7,6 +7,8 @@ import { useGamePlatforms } from '../context/GamePlatformContext'
 import { useGameGenres } from '../context/GameGenreContext'
 import { usePlatforms } from '../context/PlatformContext'
 import { useGenres } from '../context/GenreContext'
+import { postUserGameToDatabase } from '../api/userGamesApi'
+import { postGameToDatabase } from '../api/gameApi'
 import axios from 'axios';
 
 function AddGamePage() {
@@ -102,6 +104,32 @@ function AddGamePage() {
 
   }
 
+  const createUserGame = async (newUserGame) => {
+
+    await postUserGameToDatabase(newUserGame);
+
+    setUserGames([...usergames, newUserGame]);
+
+  }
+
+  const createGame = async (newGame) => {
+
+    await postGameToDatabase(newGame);
+
+    setGames([...games, newGame]);
+
+  }
+
+  const checkIfUserGameExists = (rawGId) => {
+    const game = games.find(g => g.rawGId === rawGId)
+    if (!game)
+      return false;
+    const usergame = usergames.find(u => u.game_id === game.id && user.id === u.user_id)
+    if (usergame)
+      return true;
+    return false;
+  }
+
 
   const createGameGenres = (rawGArrayOfGenres, gameId) => {
     const gameGenreList = rawGArrayOfGenres.map(genre => {
@@ -155,7 +183,13 @@ function AddGamePage() {
               <div>{game.released}</div>
             </div>
             <button
-              onClick={() => {
+              onClick={async () => {
+                const check = checkIfUserGameExists(game.id);
+                if (check) {
+                  window.alert(`Game ${game.name} already exists in your list`);
+                  return;
+                }
+
                 const newGame = {
                   id: getNewGameId(),
                   title: game.name,
@@ -163,7 +197,9 @@ function AddGamePage() {
                   //genre: '', // Fill as needed
                   //platform: '',
                   releaseDate: game.released,
+                  rawGId: game.id,
                 };
+                await createGame(newGame);
                 setGames([...games, newGame]);
                 const newUserGame = {
                   id: getNewUserGameId(),
@@ -174,7 +210,7 @@ function AddGamePage() {
                   game_id: newGame.id,
                   user_id: user.id
                 }
-                setUserGames([...usergames, newUserGame])
+                createUserGame(newUserGame);
                 createGameplatforms(game.platforms, newUserGame.game_id);
                 createGameGenres(game.genres, newUserGame.game_id)
                 navigate('/gamelistpage'); // 👈 Navigate after adding

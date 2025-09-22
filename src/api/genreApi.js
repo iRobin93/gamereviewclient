@@ -19,7 +19,7 @@ export const postRawGGenresToDatabase = async (rawGGenresList) => {
   rawGId: genre.id,
   genreName: genre.name
 }
-    const response = await axios.post(`${BASE_URL}/Genre`, genreObject);
+    await axios.post(`${BASE_URL}/Genre`, genreObject);
   }
 };
 

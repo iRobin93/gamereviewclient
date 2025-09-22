@@ -8,20 +8,21 @@ import { useUserGames } from '../context/UserGameContext';
 import { useGameGenres } from '../context/GameGenreContext';
 import { useGamePlatforms } from '../context/GamePlatformContext';
 import { useGenres } from '../context/GenreContext';
-import {usePlatforms} from '../context/PlatformContext'
+import { usePlatforms } from '../context/PlatformContext'
+import { deleteUserGame } from '../api/userGamesApi'
 
 function GameListPage() {
   const { user } = useUser();
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
   const { games } = useGames();
-  const {usergames, setUserGames} = useUserGames();
+  const { usergames, setUserGames } = useUserGames();
   const { gamegenres } = useGameGenres();
   const { gameplatforms } = useGamePlatforms();
   const [filter, setFilter] = useState('');
   const dropdownRef = useRef(null);
-  const {genres} = useGenres();
-  const {platforms} = usePlatforms();
+  const { genres } = useGenres();
+  const { platforms } = usePlatforms();
 
 
   useEffect(() => {
@@ -65,26 +66,26 @@ function GameListPage() {
 
   const getGameGenres = (gameId) => {
 
-      const genreLinks = gamegenres.filter(g => g.game_id === gameId);
+    const genreLinks = gamegenres.filter(g => g.game_id === gameId);
 
-      const genreNames = genreLinks.map(link => {
-        const genre = genres.find(g => g.id === link.genre_id);
-        return genre ? genre.genreName : null;
-      }).filter(name => name !== null);
+    const genreNames = genreLinks.map(link => {
+      const genre = genres.find(g => g.id === link.genre_id);
+      return genre ? genre.genreName : null;
+    }).filter(name => name !== null);
 
-      return genreNames.join(', ');
+    return genreNames.join(', ');
   }
 
-   const getGamePlatforms = (gameId) => {
+  const getGamePlatforms = (gameId) => {
 
-      const gamePlatformList = gameplatforms.filter(g => g.game_id === gameId);
+    const gamePlatformList = gameplatforms.filter(g => g.game_id === gameId);
 
-      const platformNames = gamePlatformList.map(gamePlatform => {
-        const platform = platforms.find(p => p.id === gamePlatform.platform_id);
-        return platform ? platform.platformName : null;
-      }).filter(name => name !== null);
+    const platformNames = gamePlatformList.map(gamePlatform => {
+      const platform = platforms.find(p => p.id === gamePlatform.platform_id);
+      return platform ? platform.platformName : null;
+    }).filter(name => name !== null);
 
-      return platformNames.join(', ');
+    return platformNames.join(', ');
   }
 
   const handleAchievement = () => {
@@ -98,6 +99,25 @@ function GameListPage() {
   const handleReview = (id) => {
     navigate(`/reviewpage/${id}`);
   };
+
+  const handleDelete = (id, title) => {
+    
+    const deleted = deleteUserGameFromUserGamesList(id, title);
+    if (deleted)
+      deleteUserGame(id);
+  };
+
+  const deleteUserGameFromUserGamesList = (id, title) => {
+    const userGameToDelete = usergames.find(g => g.id === id);
+    if (!userGameToDelete) return false;
+
+    const confirmDelete = window.confirm(`Delete game: ${title}?`);
+    if (!confirmDelete) return false;
+
+    setUserGames(prevGames => prevGames.filter(game => game.id !== id));
+    return true;
+  };
+
 
   const filteredUserGames = usergames
     .filter(userGame => userGame.user_id === user.id)
@@ -198,6 +218,13 @@ function GameListPage() {
               {!mergedGame_UserGame.reviewed && (
                 <button onClick={() => handleReview(mergedGame_UserGame.userGame_id)}>Review</button>
               )}
+
+            </div>
+            <div className="game-actions">
+
+              <button onClick={() => handleDelete(mergedGame_UserGame.userGame_id, mergedGame_UserGame.title)}>Delete</button>
+
+
             </div>
           </div>
         ))}
