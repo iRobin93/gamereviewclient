@@ -9,6 +9,8 @@ import { usePlatforms } from '../context/PlatformContext'
 import { useGenres } from '../context/GenreContext'
 import { postUserGameToDatabase } from '../api/userGamesApi'
 import { postGameToDatabase } from '../api/gameApi'
+import { postGamePlatformToDatabase } from '../api/gamePlatformApi'
+import { postGameGenreToDatabase } from '../api/gameGenresApi'
 import axios from 'axios';
 
 function AddGamePage() {
@@ -45,24 +47,6 @@ function AddGamePage() {
     }
   }
 
-  const getNewGameId = () => {
-    const existingIds = games.map(game => game.id);
-    let id = 1;
-    while (existingIds.includes(id)) {
-      id++;
-    }
-    return id;
-  };
-
-  const getNewUserGameId = () => {
-    const existingIds = usergames.map(usergame => usergame.id);
-    let id = 1;
-    while (existingIds.includes(id)) {
-      id++;
-    }
-    return id;
-  };
-
   const getNewGamePlatformId = () => {
     const existingIds = gameplatforms.map(gameplatform => gameplatform.id);
     let id = 1;
@@ -81,7 +65,7 @@ function AddGamePage() {
     return id;
   };
 
-  const getPlatform_id = (rawGId) => {
+  const getPlatform_idByRawGId = (rawGId) => {
     const platform = platforms.find(p => p.rawGId === rawGId)
     return platform.id;
   };
@@ -91,18 +75,27 @@ function AddGamePage() {
     return genre.id;
   };
 
-  const createGameplatforms = (rawGArrayOfPlatforms, gameId) => {
-    const gamePlatformList = rawGArrayOfPlatforms.map(platform => {
-      return {
+  const createGamePlatforms = async (rawGArrayOfPlatforms, gameId) => {
+    // Filter and map in one step
+    const newPlatforms = rawGArrayOfPlatforms
+      .filter(platform => {
+        const platformId = getPlatform_idByRawGId(platform.platform.id);
+        return !gameplatforms.find(g => g.platform_id === platformId && g.game_id === gameId);
+      })
+      .map(platform => ({
         game_id: gameId,
         id: getNewGamePlatformId(),
-        platform_id: getPlatform_id(platform.platform.id),
-      }
+        platform_id: getPlatform_idByRawGId(platform.platform.id),
+      }));
 
-    })
-    setGamePlatforms([...gameplatforms, ...gamePlatformList]);
+    if (newPlatforms.length === 0) return; // No new entries, skip
 
-  }
+    setGamePlatforms([...gameplatforms, ...newPlatforms]);
+
+    for (const platform of newPlatforms) {
+      await postGamePlatformToDatabase(platform);
+    }
+  };
 
   const createUserGame = async (newUserGame) => {
 
@@ -131,18 +124,26 @@ function AddGamePage() {
   }
 
 
-  const createGameGenres = (rawGArrayOfGenres, gameId) => {
-    const gameGenreList = rawGArrayOfGenres.map(genre => {
-      return {
+  const createGameGenres = async (rawGArrayOfGenres, gameId) => {
+    const newGenres = rawGArrayOfGenres
+      .filter(genre => {
+        const genreId = getGenre_id(genre.id);
+        return !gamegenres.find(g => g.genre_id === genreId && g.game_id === gameId);
+      })
+      .map(genre => ({
         game_id: gameId,
         id: getNewGameGenreId(),
         genre_id: getGenre_id(genre.id),
-      }
+      }));
 
-    })
-    setGameGenres([...gamegenres, ...gameGenreList]);
+    if (newGenres.length === 0) return; // Skip if there's nothing new
 
-  }
+    setGameGenres([...gamegenres, ...newGenres]);
+    for (const genre of newGenres) {
+      await postGameGenreToDatabase(genre);
+    }
+  };
+
 
   return (
     <div style={{ padding: '2rem' }}>
@@ -184,25 +185,21 @@ function AddGamePage() {
             </div>
             <button
               onClick={async () => {
-                const check = checkIfUserGameExists(game.id);
-                if (check) {
+                const checkGameExist = checkIfUserGameExists(game.id);
+                if (checkGameExist) {
                   window.alert(`Game ${game.name} already exists in your list`);
                   return;
                 }
 
                 const newGame = {
-                  id: getNewGameId(),
                   title: game.name,
                   coverImageUrl: game.background_image,
-                  //genre: '', // Fill as needed
-                  //platform: '',
                   releaseDate: game.released,
                   rawGId: game.id,
                 };
                 await createGame(newGame);
                 setGames([...games, newGame]);
                 const newUserGame = {
-                  id: getNewUserGameId(),
                   rating: undefined,
                   reviewed: false,
                   reviewText: "",
@@ -211,7 +208,7 @@ function AddGamePage() {
                   user_id: user.id
                 }
                 createUserGame(newUserGame);
-                createGameplatforms(game.platforms, newUserGame.game_id);
+                createGamePlatforms(game.platforms, newUserGame.game_id);
                 createGameGenres(game.genres, newUserGame.game_id)
                 navigate('/gamelistpage'); // 👈 Navigate after adding
               }}

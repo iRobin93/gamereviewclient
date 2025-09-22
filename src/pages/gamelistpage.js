@@ -9,7 +9,7 @@ import { useGameGenres } from '../context/GameGenreContext';
 import { useGamePlatforms } from '../context/GamePlatformContext';
 import { useGenres } from '../context/GenreContext';
 import { usePlatforms } from '../context/PlatformContext'
-import { deleteUserGame } from '../api/userGamesApi'
+import { deleteUserGameFromDatabase } from '../api/userGamesApi'
 
 function GameListPage() {
   const { user } = useUser();
@@ -100,11 +100,14 @@ function GameListPage() {
     navigate(`/reviewpage/${id}`);
   };
 
-  const handleDelete = (id, title) => {
-    
+  const handleDeleteUserGame = async (id, title) => {
+
     const deleted = deleteUserGameFromUserGamesList(id, title);
-    if (deleted)
-      deleteUserGame(id);
+    if (deleted) {
+      deleteUserGameFromDatabase(id);
+    }
+
+
   };
 
   const deleteUserGameFromUserGamesList = (id, title) => {
@@ -222,7 +225,7 @@ function GameListPage() {
             </div>
             <div className="game-actions">
 
-              <button onClick={() => handleDelete(mergedGame_UserGame.userGame_id, mergedGame_UserGame.title)}>Delete</button>
+              <button onClick={() => handleDeleteUserGame(mergedGame_UserGame.userGame_id, mergedGame_UserGame.title)}>Delete</button>
 
 
             </div>
