@@ -11,6 +11,7 @@ import { postUserGameToDatabase } from '../api/userGamesApi'
 import { postGameToDatabase } from '../api/gameApi'
 import { postGamePlatformToDatabase } from '../api/gamePlatformApi'
 import { postGameGenreToDatabase } from '../api/gameGenresApi'
+import { postOneRawGPlatformsToDatabase } from '../api/platformApi'
 import axios from 'axios';
 
 function AddGamePage() {
@@ -23,7 +24,7 @@ function AddGamePage() {
   const { games, setGames } = useGames();
   const { usergames, setUserGames } = useUserGames();
   const { gameplatforms, setGamePlatforms } = useGamePlatforms();
-  const { platforms } = usePlatforms();
+  const { platforms, setPlatforms } = usePlatforms();
   const { genres } = useGenres();
   const { gamegenres, setGameGenres } = useGameGenres();
   const handleSearch = async () => {
@@ -67,7 +68,9 @@ function AddGamePage() {
 
   const getPlatform_idByRawGId = (rawGId) => {
     const platform = platforms.find(p => p.rawGId === rawGId)
+    if(platform)
     return platform.id;
+  return undefined;
   };
 
   const getGenre_id = (rawGId) => {
@@ -75,27 +78,78 @@ function AddGamePage() {
     return genre.id;
   };
 
-  const createGamePlatforms = async (rawGArrayOfPlatforms, gameId) => {
-    // Filter and map in one step
-    const newPlatforms = rawGArrayOfPlatforms
-      .filter(platform => {
-        const platformId = getPlatform_idByRawGId(platform.platform.id);
-        return !gameplatforms.find(g => g.platform_id === platformId && g.game_id === gameId);
-      })
-      .map(platform => ({
-        game_id: gameId,
-        id: getNewGamePlatformId(),
-        platform_id: getPlatform_idByRawGId(platform.platform.id),
-      }));
 
-    if (newPlatforms.length === 0) return; // No new entries, skip
 
-    setGamePlatforms([...gameplatforms, ...newPlatforms]);
+const createGamePlatforms = async (rawGArrayOfPlatforms, gameId) => {
+  const newGamePlatforms = [];
 
-    for (const platform of newPlatforms) {
-      await postGamePlatformToDatabase(platform);
+  for (const entry of rawGArrayOfPlatforms) {
+
+    const rawPlatformId = entry.platform.id;
+    const rawPlatformName = entry.platform.name;
+
+    // STEP 2: Try to map to internal platform_id
+    let platformId = getPlatform_idByRawGId(rawPlatformId);
+
+    // STEP 2b: If not found, create and store a new platform
+    if (!platformId) {
+      const newPlatform = {
+        rawGId: rawPlatformId,
+        platformName: rawPlatformName,
+      };
+
+      try {
+        // Post to backend and get assigned id if needed
+        const savedPlatform = await postOneRawGPlatformsToDatabase(newPlatform);
+        platformId = savedPlatform.id; // Adjust depending on your backend response
+        setPlatforms((prev) => [...prev, savedPlatform]);
+        console.log(`➕ Created new platform: ${rawPlatformName} (id: ${platformId})`);
+      } catch (err) {
+        console.error("❌ Failed to post new platform:", newPlatform, err);
+        continue; // Skip this platform if creation failed
+      }
     }
-  };
+
+    // STEP 3: Check for duplicates
+    const alreadyExists = gameplatforms.some(
+      (g) => g.platform_id === platformId && g.game_id === gameId
+    );
+
+    if (alreadyExists) {
+      console.log(`ℹ️ Platform already exists for game ${gameId}:`, platformId);
+      continue;
+    }
+
+    // STEP 4: Add to new platforms list
+    newGamePlatforms.push({
+      game_id: gameId,
+      id: getNewGamePlatformId(),
+      platform_id: platformId,
+    });
+  }
+
+  // No new platforms to add
+  if (newGamePlatforms.length === 0) {
+    console.log("✅ No new platforms to add.");
+    return;
+  }
+
+  // Optimistically update UI using functional state update
+  setGamePlatforms((prev) => [...prev, ...newGamePlatforms]);
+
+  // Send new platforms to backend
+  for (const platform of newGamePlatforms) {
+    try {
+      await postGamePlatformToDatabase(platform);
+    } catch (err) {
+      console.error("❌ Failed to post platform:", platform, err);
+    }
+  }
+};
+
+
+
+
 
   const createUserGame = async (newUserGame) => {
 
@@ -207,7 +261,7 @@ function AddGamePage() {
                   game_id: newGame.id,
                   user_id: user.id
                 }
-                createUserGame(newUserGame);
+                await createUserGame(newUserGame);
                 createGamePlatforms(game.platforms, newUserGame.game_id);
                 createGameGenres(game.genres, newUserGame.game_id)
                 navigate('/gamelistpage'); // 👈 Navigate after adding

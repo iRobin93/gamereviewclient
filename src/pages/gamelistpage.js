@@ -10,6 +10,7 @@ import { useGamePlatforms } from '../context/GamePlatformContext';
 import { useGenres } from '../context/GenreContext';
 import { usePlatforms } from '../context/PlatformContext'
 import { deleteUserGameFromDatabase } from '../api/userGamesApi'
+import { putUserGameToDatabase } from '../api/userGamesApi'
 
 function GameListPage() {
   const { user } = useUser();
@@ -56,12 +57,36 @@ function GameListPage() {
   }
 
 
-  const updateStatus = (id, newStatus) => {
-    setUserGames((userGames) =>
-      userGames.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
-    );
-    setEditingStatusId(null); // close dropdown
+const updateStatus = (id, newStatus) => {
+  // Optimistically update UI
+  setUserGames((userGames) =>
+    userGames.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
+  );
+
+  // Find the full userGame object to send to backend
+  const currentUserGame = usergames.find((u) => u.id === id && u.user_id === user.id);
+
+  if (!currentUserGame) {
+    console.error(`UserGame with id ${id} not found.`);
+    return;
+  }
+
+  // Create updated object for PUT request
+  const updatedUserGame = {
+    ...currentUserGame,
+    status: newStatus,
   };
+
+  // Call API to update in database
+  putUserGameToDatabase(id, updatedUserGame)
+    .catch((error) => {
+      console.error("Failed to update status in database:", error);
+      // Optionally revert UI or show a toast/alert
+    });
+
+  // Close dropdown
+  setEditingStatusId(null);
+};
 
 
   const getGameGenres = (gameId) => {

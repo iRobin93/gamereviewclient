@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useUserGames } from '../context/UserGameContext';
 import { useGames } from '../context/GameContext';
 import { useEffect } from 'react';
+import { putUserGameToDatabase } from '../api/userGamesApi';
 
 
 function ReviewPage() {
@@ -35,6 +36,7 @@ useEffect(() => {
     usergame.reviewText = reviewText;
     usergame.rating = rating;
     usergame.reviewed = true;
+    putUserGameToDatabase(usergame.id, usergame);
     navigate('/gamelistpage');
   };
 

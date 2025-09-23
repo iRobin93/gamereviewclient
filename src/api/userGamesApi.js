@@ -24,3 +24,14 @@ export const postUserGameToDatabase = async (newUserGame) => {
   newUserGame.id = response.data.id;
   return response.data;
 };
+
+
+export const putUserGameToDatabase = async (id, updatedUserGame) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/UserGame/${id}`, updatedUserGame);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating UserGame:', error);
+    throw error;
+  }
+};

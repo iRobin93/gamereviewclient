@@ -22,3 +22,9 @@ export const postRawGPlatformsToDatabase = async (rawGPlatformsList) => {
     await axios.post(`${BASE_URL}/Platform`, platformObject);
   }
 };
+
+export const postOneRawGPlatformsToDatabase = async (rawGPlatform) => {
+    const response = await axios.post(`${BASE_URL}/Platform`, rawGPlatform);
+    return response.data;
+};
+
