@@ -84,10 +84,16 @@ function LoginPage() {
 
     const fetchPlatformsFromRawG = async () => {
       try {
-        const rawGPlatformssList = await getPlatformsFromRawG();
-        await postRawGPlatformsToDatabase(rawGPlatformssList.results);
+        let rawGPlatformssList = {
+          next: null
+        };
+        do {
+          rawGPlatformssList = await getPlatformsFromRawG(rawGPlatformssList.next);
+          await postRawGPlatformsToDatabase(rawGPlatformssList.results);
+        } while (rawGPlatformssList.next != null);
+
       } catch (error) {
-        console.error('Failed to fetch Genres:', error);
+        console.error('Failed to fetch Platforms from rawG:', error);
       }
     };
 
@@ -99,7 +105,7 @@ function LoginPage() {
         );
         setGameGenres(gameGenresList.flat());
       } catch (error) {
-        console.error('Failed to fetch GameGenres:', error);
+        console.error('Failed to fetch GameGenres from rawG:', error);
       }
     };
 
@@ -115,8 +121,14 @@ function LoginPage() {
 
     const fetchGenresFromRawG = async () => {
       try {
-        const rawGGenresList = await getGenresFromRawG();
-        await postRawGGenresToDatabase(rawGGenresList.results);
+        let rawGGenresList = {
+          next: null
+        };
+        do {
+          rawGGenresList = await getGenresFromRawG(rawGGenresList.next);
+          await postRawGGenresToDatabase(rawGGenresList.results);
+        } while (rawGGenresList.next != null);
+
       } catch (error) {
         console.error('Failed to fetch Genres:', error);
       }

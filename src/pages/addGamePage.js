@@ -16,6 +16,7 @@ import axios from 'axios';
 
 function AddGamePage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [moreGamesToDisplay, setMoreGamesDisplay] = useState(false);
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const apiKey = "b1a02be62e9140459f53df733ff56c1e"; // Secure via env
@@ -35,12 +36,17 @@ function AddGamePage() {
       const response = await axios.get('https://api.rawg.io/api/games', {
         params: {
           key: apiKey,
-          search: searchTerm
+          search: searchTerm,
+          page_size: 40
         }
       });
 
       const data = response.data;
       setResults(data.results || []);
+      if(data.next != null)
+        setMoreGamesDisplay(true);
+      else 
+        setMoreGamesDisplay(false);
     } catch (err) {
       console.error('Search failed:', err);
     } finally {
@@ -203,6 +209,15 @@ const createGamePlatforms = async (rawGArrayOfPlatforms, gameId) => {
     <div style={{ padding: '2rem' }}>
       <button onClick={() => navigate('/gamelistpage')}>← Back</button>
       <h2>Add a Game</h2>
+      
+      {moreGamesToDisplay && (
+  <div style={{ marginTop: '1.5rem', marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0f8ff', borderLeft: '4px solid #ff0000ff', borderRadius: '4px' }}>
+    <strong style={{ color: '#ff0000ff', fontSize: '1.1rem' }}>
+      More games found. Search more narrow for a better suiting list.
+    </strong>
+  </div>
+)}
+    
       <div>
         <input
           type="text"
