@@ -14,16 +14,19 @@ import { putUserGameToDatabase } from '../api/userGamesApi'
 
 function GameListPage() {
   const { user } = useUser();
+  const [filterShow, setFilterShow] = useState(false);
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
   const { games } = useGames();
   const { usergames, setUserGames } = useUserGames();
   const { gamegenres } = useGameGenres();
   const { gameplatforms } = useGamePlatforms();
-  const [filter, setFilter] = useState('');
+  const [search, setSearch] = useState('');
   const dropdownRef = useRef(null);
   const { genres } = useGenres();
   const { platforms } = usePlatforms();
+  const [activePlatforms, setActivePlatforms] = useState([]);
+  const [activeGenres, setActiveGenres] = useState([]);
 
 
   useEffect(() => {
@@ -57,36 +60,36 @@ function GameListPage() {
   }
 
 
-const updateStatus = (id, newStatus) => {
-  // Optimistically update UI
-  setUserGames((userGames) =>
-    userGames.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
-  );
+  const updateStatus = (id, newStatus) => {
+    // Optimistically update UI
+    setUserGames((userGames) =>
+      userGames.map((u) => (u.id === id ? { ...u, status: newStatus } : u))
+    );
 
-  // Find the full userGame object to send to backend
-  const currentUserGame = usergames.find((u) => u.id === id && u.user_id === user.id);
+    // Find the full userGame object to send to backend
+    const currentUserGame = usergames.find((u) => u.id === id && u.user_id === user.id);
 
-  if (!currentUserGame) {
-    console.error(`UserGame with id ${id} not found.`);
-    return;
-  }
+    if (!currentUserGame) {
+      console.error(`UserGame with id ${id} not found.`);
+      return;
+    }
 
-  // Create updated object for PUT request
-  const updatedUserGame = {
-    ...currentUserGame,
-    status: newStatus,
+    // Create updated object for PUT request
+    const updatedUserGame = {
+      ...currentUserGame,
+      status: newStatus,
+    };
+
+    // Call API to update in database
+    putUserGameToDatabase(id, updatedUserGame)
+      .catch((error) => {
+        console.error("Failed to update status in database:", error);
+        // Optionally revert UI or show a toast/alert
+      });
+
+    // Close dropdown
+    setEditingStatusId(null);
   };
-
-  // Call API to update in database
-  putUserGameToDatabase(id, updatedUserGame)
-    .catch((error) => {
-      console.error("Failed to update status in database:", error);
-      // Optionally revert UI or show a toast/alert
-    });
-
-  // Close dropdown
-  setEditingStatusId(null);
-};
 
 
   const getGameGenres = (gameId) => {
@@ -125,6 +128,10 @@ const updateStatus = (id, newStatus) => {
     navigate(`/reviewpage/${id}`);
   };
 
+  const toggleFilters = () => {
+    setFilterShow(!filterShow)
+  };
+
   const handleDeleteUserGame = async (id, title) => {
 
     const deleted = deleteUserGameFromUserGamesList(id, title);
@@ -151,7 +158,27 @@ const updateStatus = (id, newStatus) => {
     .filter(userGame => userGame.user_id === user.id)
     .filter(userGame => {
       const game = games.find(g => g.id === userGame.game_id);
-      return game && game.title.toLowerCase().includes(filter.toLowerCase());
+      const gameplatform = gameplatforms.find(
+        g => g.game_id === game.id && activePlatforms.find(a => a.id === g.platform_id)
+      );
+      const gamegenre = gamegenres.find(
+        g => g.game_id === game.id && activeGenres.find(a => a.id === g.genre_id)
+      );
+      let showGamePlatform = false;
+      if (gameplatform !== undefined) {
+        showGamePlatform = true;
+      }
+      else if(activePlatforms.length === 0)
+        showGamePlatform = true;
+
+      let showGameGenre = false;
+            if (gamegenre !== undefined) {
+        showGameGenre = true;
+      }
+      else if(activeGenres.length === 0)
+        showGameGenre = true;
+      
+      return (game && game.title.toLowerCase().includes(search.toLowerCase()) && showGamePlatform && showGameGenre);
     })
     .map(userGame => {
       const game = games.find(g => g.id === userGame.game_id);
@@ -164,16 +191,79 @@ const updateStatus = (id, newStatus) => {
     });
 
 
+  const handlePlatformFilter = (platform) => {
+    setActivePlatforms(prev => {
+      const exists = prev.some(p => p.id === platform.id);
+
+      if (exists) {
+        // Remove it
+        return prev.filter(p => p.id !== platform.id);
+      } else {
+        // Add it
+        return [...prev, platform];
+      }
+    });
+  };
+
+  const handleGenreFilter = (genre) => {
+    setActiveGenres(prev => {
+      const exists = prev.some(g => g.id === genre.id);
+
+      if (exists) {
+        // Remove it
+        return prev.filter(g => g.id !== genre.id);
+      } else {
+        // Add it
+        return [...prev, genre];
+      }
+    });
+  };
+
+
 
   return (
     <div className="game-list-container">
       <h2>🎮 Game List</h2>
       <button onClick={handleAchievement}>Achievements </button>
+      <button className={(activePlatforms.length > 0) || (activeGenres.length > 0) ? 'active' : ''} onClick={toggleFilters}>Filter </button>
+
+
+      {filterShow && (
+        <div className="filter-section">
+          <h3>Filter by Platform</h3>
+          <div className="filter-buttons">
+            {platforms.map(platform => (
+              <button
+                key={platform.id}
+                className={activePlatforms.some(p => p.id === platform.id) ? 'active' : ''}
+                onClick={() => handlePlatformFilter(platform)}
+              >
+                {platform.platformName}
+              </button>
+            ))}
+          </div>
+
+          <h3>Filter by Genre</h3>
+          <div className="filter-buttons">
+            {genres.map(genre => (
+              <button
+                key={genre.id}
+                className={activeGenres.some(g => g.id === genre.id) ? 'active' : ''}
+                onClick={() => handleGenreFilter(genre)}
+              >
+                {genre.genreName}
+              </button>
+            ))}
+
+          </div>
+        </div>
+      )}
+
       <input
         type="text"
         placeholder="Filter by title..."
-        value={filter}
-        onChange={(e) => setFilter(e.target.value)}
+        value={search}
+        onChange={(e) => setSearch(e.target.value, activePlatforms, activeGenres)}
         className="filter-input"
       />
 
