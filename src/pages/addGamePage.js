@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
@@ -12,6 +12,8 @@ import { postGameToDatabase } from '../api/gameApi'
 import { postGamePlatformToDatabase } from '../api/gamePlatformApi'
 import { postGameGenreToDatabase } from '../api/gameGenresApi'
 import { postOneRawGPlatformsToDatabase } from '../api/platformApi'
+import { fetchGameGenres } from '../App'
+import { fetchGamePlatforms } from '../App'
 import axios from 'axios';
 
 function AddGamePage() {
@@ -30,6 +32,15 @@ function AddGamePage() {
   const { genres } = useGenres();
   const { gamegenres, setGameGenres } = useGameGenres();
   const [activeSearch, setActiveSearch] = useState('rawG')
+
+
+  useEffect(() => {
+  if (usergames.length > 0) {
+    fetchGameGenres(usergames, setGameGenres);
+    fetchGamePlatforms(usergames, setGamePlatforms);
+  }
+}, [usergames, setGameGenres, setGamePlatforms]);
+
 
   const handleSearch = async () => {
     if (!searchTerm.trim()) return;
@@ -65,7 +76,7 @@ function AddGamePage() {
             return (Game.title.toLowerCase().includes(searchTerm.toLowerCase()));
           })
 
-          setResults(filteredGames);
+        setResults(filteredGames);
       } catch (err) {
         console.error('Search failed:', err);
       }
@@ -186,7 +197,7 @@ function AddGamePage() {
 
     await postUserGameToDatabase(newUserGame);
 
-    setUserGames([...usergames, newUserGame]);
+    setUserGames(prevUserGames => [...prevUserGames, newUserGame]);
 
   }
 
@@ -218,6 +229,12 @@ function AddGamePage() {
     return false;
   }
 
+  const checkIfGameExistByRawGId = (rawGId) => {
+    const game = games.find(g => g.rawGId === rawGId);
+    if (game)
+      return game;
+    return null;
+  }
 
   const createGameGenres = async (rawGArrayOfGenres, gameId) => {
     const newGenres = rawGArrayOfGenres
@@ -303,31 +320,43 @@ function AddGamePage() {
               </div>
               <button
                 onClick={async () => {
-                  const checkGameExist = checkIfUserGameExistsByRawGId(game.id);
-                  if (checkGameExist) {
+                  const checkUserGameExist = checkIfUserGameExistsByRawGId(game.id);
+                  if (checkUserGameExist) {
                     window.alert(`Game ${game.name} already exists in your list`);
                     return;
                   }
+                  let gameObject = checkIfGameExistByRawGId(game.id);
+                  let createGenreAndPlatforms = gameObject ? false : true;
 
-                  const newGame = {
-                    title: game.name,
-                    coverImageUrl: game.background_image,
-                    releaseDate: game.released,
-                    rawGId: game.id,
-                  };
-                  await createGame(newGame);
-                  setGames([...games, newGame]);
+                  if (!gameObject) {
+                    gameObject = {
+                      title: game.name,
+                      coverImageUrl: game.background_image,
+                      releaseDate: game.released,
+                      rawGId: game.id,
+                    };
+                    await createGame(gameObject);
+                    setGames([...games, gameObject]);
+                  }
+
+
+
                   const newUserGame = {
                     rating: undefined,
                     reviewed: false,
                     reviewText: "",
                     status: "NotStarted",
-                    game_id: newGame.id,
+                    game_id: gameObject.id,
                     user_id: user.id
                   }
                   await createUserGame(newUserGame);
-                  createGamePlatforms(game.platforms, newUserGame.game_id);
-                  createGameGenres(game.genres, newUserGame.game_id)
+
+                  if (createGenreAndPlatforms) {
+                    createGamePlatforms(game.platforms, newUserGame.game_id);
+                    createGameGenres(game.genres, newUserGame.game_id)
+                  }
+
+
                   navigate('/gamelistpage'); // 👈 Navigate after adding
                 }}
               >
@@ -406,11 +435,12 @@ function AddGamePage() {
               </div>
               <button
                 onClick={async () => {
-                  const checkGameExist = checkIfUserGameExistsByGameReviewId(game.id);
-                  if (checkGameExist) {
+                  const checkUserGameExist = checkIfUserGameExistsByGameReviewId(game.id);
+                  if (checkUserGameExist) {
                     window.alert(`Game ${game.title} already exists in your list`);
                     return;
                   }
+
                   const newUserGame = {
                     rating: undefined,
                     reviewed: false,

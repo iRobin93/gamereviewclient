@@ -29,6 +29,31 @@ import { getGenres, getGenresFromRawG, postRawGGenresToDatabase } from './api/ge
 import { getPlatforms, getPlatformsFromRawG, postRawGPlatformsToDatabase } from './api/platformApi';
 import { useEffect, useState } from 'react';
 
+
+export const fetchGameGenres = async (userGames, setGameGenres) => {
+  try {
+
+    const gameGenresList = await Promise.all(
+      userGames.map(userGame => getGameGenres(userGame.game_id))
+    );
+    setGameGenres(gameGenresList.flat());
+  } catch (error) {
+    console.error('Failed to fetch GameGenres from rawG:', error);
+  }
+};
+
+export const fetchGamePlatforms = async (userGames, setGamePlatforms) => {
+  try {
+
+    const gamePlatformsList = await Promise.all(
+      userGames.map(usergame => getGamePlatforms(usergame.game_id))
+    );
+    setGamePlatforms(gamePlatformsList.flat());
+  } catch (error) {
+    console.error('Failed to fetch GamePlatforms:', error);
+  }
+};
+
 function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -97,17 +122,7 @@ function LoginPage() {
       }
     };
 
-    const fetchGameGenres = async (userGames) => {
-      try {
 
-        const gameGenresList = await Promise.all(
-          userGames.map(game => getGameGenres(game.game_id))
-        );
-        setGameGenres(gameGenresList.flat());
-      } catch (error) {
-        console.error('Failed to fetch GameGenres from rawG:', error);
-      }
-    };
 
     const fetchGenres = async () => {
       try {
@@ -145,17 +160,7 @@ function LoginPage() {
       return [];
     };
 
-    const fetchGamePlatforms = async (userGames) => {
-      try {
 
-        const gamePlatformsList = await Promise.all(
-          userGames.map(game => getGamePlatforms(game.game_id))
-        );
-        setGamePlatforms(gamePlatformsList.flat());
-      } catch (error) {
-        console.error('Failed to fetch GamePlatforms:', error);
-      }
-    };
 
     e.preventDefault();
 
@@ -170,8 +175,8 @@ function LoginPage() {
       await fetchPlatforms();
 
       const userGames = await fetchUserGames(userObject.id);
-      await fetchGamePlatforms(userGames);
-      await fetchGameGenres(userGames);
+      await fetchGamePlatforms(userGames, setGamePlatforms);
+      await fetchGameGenres(userGames, setGameGenres);
       navigate(`/gamelistpage`);
     } else {
       alert('Invalid credentials');
