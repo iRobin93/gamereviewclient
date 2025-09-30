@@ -6,7 +6,8 @@ import { useUser } from '../context/UserContext';
 import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
 import { useGameGenres } from '../context/GameGenreContext';
-import { useGamePlatforms } from '../context/GamePlatformContext';
+import { useGamePlatforms } from '../context/GamePlatformContext'
+import { fetchGamePlatforms, fetchGameGenres } from '../App';
 import { useGenres } from '../context/GenreContext';
 import { usePlatforms } from '../context/PlatformContext'
 import { deleteUserGameFromDatabase } from '../api/userGamesApi'
@@ -19,8 +20,8 @@ function GameListPage() {
   const [editingStatusId, setEditingStatusId] = useState(null);
   const { games } = useGames();
   const { usergames, setUserGames } = useUserGames();
-  const { gamegenres } = useGameGenres();
-  const { gameplatforms } = useGamePlatforms();
+  const { gamegenres, setGameGenres } = useGameGenres();
+  const { gameplatforms, gamePlatformsNeedRefresh,  setGamePlatformsNeedRefresh, setGamePlatforms} = useGamePlatforms();
   const [search, setSearch] = useState('');
   const dropdownRef = useRef(null);
   const { genres } = useGenres();
@@ -34,6 +35,20 @@ function GameListPage() {
       navigate('/');
     }
   }, [user, navigate]);
+
+
+
+
+useEffect(() => {
+  if (!gamePlatformsNeedRefresh) return;
+  const refresh = async () => {
+    await fetchGamePlatforms(usergames, setGamePlatforms);
+    await fetchGameGenres(usergames, setGameGenres)
+    setGamePlatformsNeedRefresh(false);
+  };
+
+  refresh();
+}, [gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh, usergames, setGamePlatforms, setGameGenres]);
 
 
   useEffect(() => {
