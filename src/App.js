@@ -1,6 +1,7 @@
 // App.js
 import { HashRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
+import { FaSpinner } from 'react-icons/fa';
 import GameListPage from './pages/gamelistpage';
 import ReviewPage from './pages/reviewpage';
 import AddGamePage from './pages/addGamePage';
@@ -66,7 +67,7 @@ function LoginPage() {
   const { setGameGenres } = useGameGenres();
   const { setPlatforms } = usePlatforms();
   const { setGamePlatforms } = useGamePlatforms();
-
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
 
   useEffect(() => {
@@ -163,13 +164,23 @@ function LoginPage() {
 
 
     e.preventDefault();
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
 
-    const userObject = allUsers.find(
-      u => u.username === username && u.password === password
-    );
+    console.log(allUsers)
+    try {
+      const userObject = allUsers.find(
+        u => u.username.trim() === username.trim() &&
+          u.password === password // consider hashing in real apps
+      );
 
-    if (userObject) {
+      if (!userObject) {
+        alert('Invalid credentials');
+        return;
+      }
+
       setUser(userObject);
+
       await fetchGames();
       await fetchGenres();
       await fetchPlatforms();
@@ -177,9 +188,13 @@ function LoginPage() {
       const userGames = await fetchUserGames(userObject.id);
       await fetchGamePlatforms(userGames, setGamePlatforms);
       await fetchGameGenres(userGames, setGameGenres);
+
       navigate(`/gamelistpage`);
-    } else {
-      alert('Invalid credentials');
+    } catch (error) {
+      console.error('Login error:', error);
+      alert('Something went wrong during login.');
+    } finally {
+      setIsLoggingIn(false); // ✅ ensure it's reset even on error
     }
   };
 
@@ -187,6 +202,7 @@ function LoginPage() {
 
 
   return (
+
     <div className="App">
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
@@ -202,7 +218,16 @@ function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         /><br />
-        <button type="submit">Login</button>
+        <button type="submit" disabled={isLoggingIn}>
+          {isLoggingIn ? (
+            <>
+              Logging in... <FaSpinner className="spin" />
+            </>
+          ) : (
+            'Login'
+          )}
+        </button>
+
       </form>
     </div>
   );
