@@ -1,5 +1,5 @@
 // App.js
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
 import GameListPage from './pages/gamelistpage';
 import ReviewPage from './pages/reviewpage';

@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import { BASE_URL } from '../model/generalData'; 
 import { getAchievements } from '../api/achievementApi';
 import { useUser } from '../context/UserContext';
 
