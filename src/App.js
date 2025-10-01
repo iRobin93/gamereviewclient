@@ -202,35 +202,41 @@ function LoginPage() {
 
 
   return (
-
-    <div className="App">
-      <h2>Login</h2>
-      <form onSubmit={handleLogin}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-        /><br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        /><br />
-        <button type="submit" disabled={isLoggingIn}>
-          {isLoggingIn ? (
-            <>
-              Logging in... <FaSpinner className="spin" />
-            </>
-          ) : (
-            'Login'
-          )}
-        </button>
-
-      </form>
-    </div>
+    allUsers && allUsers.length > 0 ? (
+      <div className="App">
+        <h2>Login</h2>
+        <form onSubmit={handleLogin}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          /><br />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          /><br />
+          <button type="submit" disabled={isLoggingIn}>
+            {isLoggingIn ? (
+              <>
+                Logging in... <FaSpinner className="spin" />
+              </>
+            ) : (
+              'Login'
+            )}
+          </button>
+        </form>
+      </div>
+    ) : (
+      <div className="App">
+        <h2>Loading...</h2>
+        <FaSpinner className="spin" />
+      </div>
+    )
   );
+
 }
 
 
