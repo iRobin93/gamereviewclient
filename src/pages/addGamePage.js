@@ -14,6 +14,7 @@ import { postGameGenreToDatabase } from '../api/gameGenresApi'
 import { postOneRawGPlatformsToDatabase } from '../api/platformApi'
 import { fetchGameGenres } from '../App'
 import { fetchGamePlatforms } from '../App'
+//import '../css/addgamepage.css';
 import axios from 'axios';
 
 function AddGamePage() {
@@ -32,7 +33,13 @@ function AddGamePage() {
   const { genres } = useGenres();
   const { gamegenres, setGameGenres } = useGameGenres();
   const [activeSearch, setActiveSearch] = useState('rawG')
-
+  const [activeSort, setActiveSort] = useState('');
+  const sortingOptions = [
+    { title: 'Reviewed Count', key: 'reviewedCount' },
+    { title: 'People has game', key: 'userGameCount' },
+    { title: 'Average Review Score', key: 'averageReviewScore' },
+    
+  ];
 
   useEffect(() => {
     if (usergames.length > 0) {
@@ -281,239 +288,269 @@ function AddGamePage() {
     }
   };
 
+const handleSort = (sorting) => {
+  setActiveSort(sorting.title);
+
+  const key = sorting.key; // the property to sort by, e.g., 'reviewedCount'
+
+  const sortedResults = [...results].sort((a, b) => {
+    // Descending order (b - a)
+    if (typeof a[key] === 'number' && typeof b[key] === 'number') {
+      return b[key] - a[key];
+    }
+    // Fallback for strings
+    if (typeof a[key] === 'string' && typeof b[key] === 'string') {
+      return b[key].localeCompare(a[key]);
+    }
+    return 0;
+  });
+
+  setResults(sortedResults); // update state with sorted results
+};
+
   if (activeSearch === "rawG")
     return (
-  <>
-      { addGamePressed && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0,
-          width: '100vw',
-          height: '100vh',
-          backgroundColor: 'rgba(255,255,255,0.8)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 9999,
-        }}>
-           
-          <div>
-            <p>Adding game, please wait...</p>
-            {/* You can replace with a spinner if you want */}
+      <>
+        {addGamePressed && (
+          <div style={{
+            position: 'fixed',
+            top: 0, left: 0,
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: 'rgba(255,255,255,0.8)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+          }}>
+
+            <div>
+              <p>Adding game, please wait...</p>
+              {/* You can replace with a spinner if you want */}
+            </div>
           </div>
+
+        )}
+
+        <div style={{ padding: '2rem' }}>
+          <button onClick={() => navigate('/gamelistpage')}>← Back</button>
+          <h2>Add a Game</h2>
+
+          {moreGamesToDisplay && (
+            <div style={{ marginTop: '1.5rem', marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0f8ff', borderLeft: '4px solid #ff0000ff', borderRadius: '4px' }}>
+              <strong style={{ color: '#ff0000ff', fontSize: '1.1rem' }}>
+                More games found. Search more narrow for a better suiting list.
+              </strong>
+            </div>
+          )}<button
+            className={activeSearch === 'rawG' ? 'active' : 'inactive'}
+            onClick={() => setActiveSearch('rawG')}>
+            RawG Games
+          </button>
+
+          <button
+            className={activeSearch === 'gameReview' ? 'active' : 'inactive'}
+            onClick={() => {
+              setActiveSearch('gameReview');
+              setResults(games);
+              setSearchTerm('');
+            }}>
+            GameReview Games
+          </button>
+
+          <div>
+            <input
+              type="text"
+              placeholder="Search for a game..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '60%', padding: '0.5rem' }}
+            />
+            <button onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
+              {loading ? 'Searching...' : 'Search'}
+            </button>
+          </div>
+          <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
+            {results.map((game) => (
+              <li
+                key={game.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '1rem',
+                  padding: '0.5rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                }}
+              >
+                <img
+                  src={game.background_image}
+                  alt={game.name}
+                  style={{ width: 60, height: 60, objectFit: 'cover', marginRight: '1rem' }}
+                />
+                <div style={{ flexGrow: 1 }}>
+                  <strong>{game.name}</strong>
+                  <div>{game.released}</div>
+                </div>
+                <button
+                  onClick={async () => {
+
+                    const checkUserGameExist = checkIfUserGameExistsByRawGId(game.id);
+                    if (checkUserGameExist) {
+                      window.alert(`Game ${game.name} already exists in your list`);
+                      return;
+                    }
+                    setAddGamePressed(true);
+
+                    let gameObject = checkIfGameExistByRawGId(game.id);
+                    let createGenreAndPlatforms = gameObject ? false : true;
+
+                    if (!gameObject) {
+                      gameObject = {
+                        title: game.name,
+                        coverImageUrl: game.background_image,
+                        releaseDate: game.released,
+                        rawGId: game.id,
+                      };
+                      await createGame(gameObject);
+                      setGames([...games, gameObject]);
+                    }
+
+
+
+                    const newUserGame = {
+                      rating: undefined,
+                      reviewed: false,
+                      reviewText: "",
+                      status: "NotStarted",
+                      game_id: gameObject.id,
+                      user_id: user.id
+                    }
+                    await createUserGame(newUserGame);
+
+                    if (createGenreAndPlatforms) {
+                      await createGamePlatforms(game.platforms, newUserGame.game_id);
+                      await createGameGenres(game.genres, newUserGame.game_id)
+                      setGamePlatformsNeedRefresh(true);
+                    }
+
+
+                    navigate('/gamelistpage'); // 👈 Navigate after adding
+                  }}
+                >
+                  Add
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
-        
-      )}
-       
-<div style={{ padding: '2rem' }}>
-  <button onClick={() => navigate('/gamelistpage')}>← Back</button>
-  <h2>Add a Game</h2>
-
-  {moreGamesToDisplay && (
-    <div style={{ marginTop: '1.5rem', marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0f8ff', borderLeft: '4px solid #ff0000ff', borderRadius: '4px' }}>
-      <strong style={{ color: '#ff0000ff', fontSize: '1.1rem' }}>
-        More games found. Search more narrow for a better suiting list.
-      </strong>
-    </div>
-  )}<button
-    className={activeSearch === 'rawG' ? 'active' : 'inactive'}
-    onClick={() => setActiveSearch('rawG')}>
-    RawG Games
-  </button>
-
-  <button
-    className={activeSearch === 'gameReview' ? 'active' : 'inactive'}
-    onClick={() => {
-      setActiveSearch('gameReview');
-      setResults(games);
-      setSearchTerm('');
-    }}>
-    GameReview Games
-  </button>
-
-  <div>
-    <input
-      type="text"
-      placeholder="Search for a game..."
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      style={{ width: '60%', padding: '0.5rem' }}
-    />
-    <button onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
-      {loading ? 'Searching...' : 'Search'}
-    </button>
-  </div>
-  <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
-    {results.map((game) => (
-      <li
-        key={game.id}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '0.5rem',
-          border: '1px solid #ddd',
-          borderRadius: '4px',
-        }}
-      >
-        <img
-          src={game.background_image}
-          alt={game.name}
-          style={{ width: 60, height: 60, objectFit: 'cover', marginRight: '1rem' }}
-        />
-        <div style={{ flexGrow: 1 }}>
-          <strong>{game.name}</strong>
-          <div>{game.released}</div>
-        </div>
-        <button
-          onClick={async () => {
-            
-            const checkUserGameExist = checkIfUserGameExistsByRawGId(game.id);
-            if (checkUserGameExist) {
-              window.alert(`Game ${game.name} already exists in your list`);
-              return;
-            }
-            setAddGamePressed(true);
-
-            let gameObject = checkIfGameExistByRawGId(game.id);
-            let createGenreAndPlatforms = gameObject ? false : true;
-
-            if (!gameObject) {
-              gameObject = {
-                title: game.name,
-                coverImageUrl: game.background_image,
-                releaseDate: game.released,
-                rawGId: game.id,
-              };
-              await createGame(gameObject);
-              setGames([...games, gameObject]);
-            }
-
-
-
-            const newUserGame = {
-              rating: undefined,
-              reviewed: false,
-              reviewText: "",
-              status: "NotStarted",
-              game_id: gameObject.id,
-              user_id: user.id
-            }
-            await createUserGame(newUserGame);
-
-            if (createGenreAndPlatforms) {
-              await createGamePlatforms(game.platforms, newUserGame.game_id);
-              await createGameGenres(game.genres, newUserGame.game_id)
-              setGamePlatformsNeedRefresh(true);
-            }
-
-
-            navigate('/gamelistpage'); // 👈 Navigate after adding
-          }}
-        >
-          Add
-        </button>
-      </li>
-    ))}
-  </ul>
-</div>
-</>
+      </>
     );
 
   else {
 
 
 
-  return (
-    <div style={{ padding: '2rem' }}>
-      <button onClick={() => navigate('/gamelistpage')}>← Back</button>
-      <h2>Add a Game</h2>
+    return (
+      <div style={{ padding: '2rem' }}>
+        <button onClick={() => navigate('/gamelistpage')}>← Back</button>
+        <h2>Add a Game</h2>
 
-      {moreGamesToDisplay && (
-        <div style={{ marginTop: '1.5rem', marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0f8ff', borderLeft: '4px solid #ff0000ff', borderRadius: '4px' }}>
-          <strong style={{ color: '#ff0000ff', fontSize: '1.1rem' }}>
-            More games found. Search more narrow for a better suiting list.
-          </strong>
-        </div>
-      )}<button
-        className={activeSearch === 'rawG' ? 'active' : 'inactive'}
-        onClick={() => {
-          setActiveSearch('rawG');
-          setResults([]);
-          setSearchTerm('');
-        }}>
-        RawG Games
-      </button>
-
-      <button
-        className={activeSearch === 'gameReview' ? 'active' : 'inactive'}
-        onClick={() => setActiveSearch('gameReview')}>
-        GameReview Games
-      </button>
-
-      <div>
-        <input
-          type="text"
-          placeholder="Search for a game..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '60%', padding: '0.5rem' }}
-        />
-        <button onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
-          {loading ? 'Searching...' : 'Search'}
+        {moreGamesToDisplay && (
+          <div style={{ marginTop: '1.5rem', marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0f8ff', borderLeft: '4px solid #ff0000ff', borderRadius: '4px' }}>
+            <strong style={{ color: '#ff0000ff', fontSize: '1.1rem' }}>
+              More games found. Search more narrow for a better suiting list.
+            </strong>
+          </div>
+        )}<button
+          className={activeSearch === 'rawG' ? 'active' : 'inactive'}
+          onClick={() => {
+            setActiveSearch('rawG');
+            setResults([]);
+            setSearchTerm('');
+          }}>
+          RawG Games
         </button>
-      </div>
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
-        {results.map((game) => (
-          <li
-            key={game.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              marginBottom: '1rem',
-              padding: '0.5rem',
-              border: '1px solid #ddd',
-              borderRadius: '4px',
-            }}
-          >
-            <img
-              src={game.coverImageUrl}
-              alt={game.title}
-              style={{ width: 60, height: 60, objectFit: 'cover', marginRight: '1rem' }}
-            />
-            <div style={{ flexGrow: 1 }}>
-              <strong>{game.title}</strong>
-              <div>{game.releaseDate}</div>
-            </div>
-            <button
-              onClick={async () => {
-                const checkUserGameExist = checkIfUserGameExistsByGameReviewId(game.id);
-                if (checkUserGameExist) {
-                  window.alert(`Game ${game.title} already exists in your list`);
-                  return;
-                }
 
-                const newUserGame = {
-                  rating: undefined,
-                  reviewed: false,
-                  reviewText: "",
-                  status: "NotStarted",
-                  game_id: game.id,
-                  user_id: user.id
-                }
-                await createUserGame(newUserGame);
-                navigate('/gamelistpage'); // 👈 Navigate after adding
+        <button
+          className={activeSearch === 'gameReview' ? 'active' : 'inactive'}
+          onClick={() => setActiveSearch('gameReview')}>
+          GameReview Games
+        </button>
+        <div className="sort-buttons">
+          {sortingOptions.map(sorting => (
+            <button
+              key={sorting.title}
+              className={activeSort === sorting.title ? 'active' : 'inactive'}
+              onClick={() => handleSort(sorting)}
+            >
+              {sorting.title}
+            </button>
+          ))}
+        </div>
+        <div>
+          <input
+            type="text"
+            placeholder="Search for a game..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ width: '60%', padding: '0.5rem' }}
+          />
+          <button onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
+            {loading ? 'Searching...' : 'Search'}
+          </button>
+        </div>
+        <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
+          {results.map((game) => (
+            <li
+              key={game.id}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '1rem',
+                padding: '0.5rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
               }}
             >
-              Add
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+              <img
+                src={game.coverImageUrl}
+                alt={game.title}
+                style={{ width: 60, height: 60, objectFit: 'cover', marginRight: '1rem' }}
+              />
+              <div style={{ flexGrow: 1 }}>
+                <strong>{game.title}</strong>
+                <div>{game.releaseDate}</div>
+              </div>
+              <button
+                onClick={async () => {
+                  const checkUserGameExist = checkIfUserGameExistsByGameReviewId(game.id);
+                  if (checkUserGameExist) {
+                    window.alert(`Game ${game.title} already exists in your list`);
+                    return;
+                  }
 
-}
+                  const newUserGame = {
+                    rating: undefined,
+                    reviewed: false,
+                    reviewText: "",
+                    status: "NotStarted",
+                    game_id: game.id,
+                    user_id: user.id
+                  }
+                  await createUserGame(newUserGame);
+                  navigate('/gamelistpage'); // 👈 Navigate after adding
+                }}
+              >
+                Add
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+
+  }
 
 }
 

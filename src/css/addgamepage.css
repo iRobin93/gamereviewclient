@@ -1,0 +1,13 @@
+/* AddGamePage.module.css */
+.active {
+  background-color: #007bff;
+  color: white;
+  border: 1px solid #007bff;
+  font-weight: bold;
+}
+
+.inactive {
+  background-color: white;
+  color: #333;
+  border: 1px solid #ccc;
+}
