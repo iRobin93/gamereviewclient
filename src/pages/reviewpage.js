@@ -4,12 +4,13 @@ import { useUserGames } from '../context/UserGameContext';
 import { useGames } from '../context/GameContext';
 import { useEffect } from 'react';
 import { putUserGameReview } from '../api/userGamesApi'
+import {fetchGame} from '../App.js'
 
 function ReviewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { usergames, setUserGames, setUsergamesNeedRefresh } = useUserGames();
-  const { setGamesNeedRefresh } = useGames();
+  const { usergames, setUsergamesNeedRefresh } = useUserGames();
+  //const { setGamesNeedRefresh } = useGames();
   const { games, setGames } = useGames();
   // Find the game by id (id param is string, convert to number)
   const usergame = usergames.find(u => u.id === parseInt(id));
@@ -34,53 +35,27 @@ function ReviewPage() {
 
   const handleStarClick = (star) => setRating(star);
 
-  const handleSave = async () => {
-    try {
-      const updatedUserGame = {
-        id: usergame.id,
-        reviewText,
-        rating,
-        reviewed: true,
-        status: usergame.status,
-        user: { id: usergame.user_id },   // ✅ full object
-        game: { id: usergame.game_id },   // ✅ full object
-      };
+const handleSave = async () => {
+  try {
+    const updatedUserGame = {
+      reviewText,
+      rating,
+      reviewed: true,
+      status: usergame.status,
+      user_id: usergame.user_id,
+      game_id: usergame.game_id
+    };
+    await putUserGameReview(usergame.id, updatedUserGame);
+    fetchGame(setGames, games, usergame.game_id);
+    setUsergamesNeedRefresh(true);
+   
 
-      const result = await putUserGameReview(usergame.id, updatedUserGame);
-      setUsergamesNeedRefresh(true);
-      //setGamesNeedRefresh(true);
-      // ✅ Update the usergames context with the new review
-      setUserGames(prevUserGames =>
-        prevUserGames.map(ug =>
-          ug.id === result.id
-            ? {
-              ...ug,
-              reviewText: result.reviewText,
-              rating: result.rating,
-              reviewed: result.reviewed,
-            }
-            : ug
-        )
-      );
-      console.log("API result:", result);
+    navigate('/gamelistpage');
+  } catch (error) {
+    console.error('Failed to save review:', error);
+  }
+};
 
-      // ✅ Update the game's average review score
-      setGames(prevGames =>
-        prevGames.map(game =>
-          game.id === result.game.id
-            ? {
-              ...game,
-              averageReviewScore: result.game.averageReviewScore
-            }
-            : game
-        )
-      );
-      console.log('Review saved and average score updated:', result);
-      navigate('/gamelistpage');
-    } catch (error) {
-      console.error('Failed to save review:', error);
-    }
-  };
 
 
 

@@ -242,6 +242,7 @@ function AddGamePage() {
   }
 
   const checkIfUserGameExistsByRawGId = (rawGId) => {
+
     const game = games.find(g => g.rawGId === rawGId)
     if (!game)
       return false;
@@ -521,6 +522,8 @@ const handleSort = (sorting) => {
               <div style={{ flexGrow: 1 }}>
                 <strong>{game.title}</strong>
                 <div>{game.releaseDate}</div>
+                <div>People has the game: {game.userGameCount}</div>
+                <div>People has reviewed the game: {game.reviewedCount}</div>
               </div>
               <button
                 onClick={async () => {

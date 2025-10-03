@@ -24,12 +24,13 @@ import { GamePlatformProvider } from './context/GamePlatformContext';
 import { getUsers } from './api/usersApi';
 import { getUserGames } from './api/userGamesApi';
 import { getGames } from './api/gameApi';
+import { getGame } from './api/gameApi';
 import { getGameGenres } from './api/gameGenresApi';
 import { getGamePlatforms } from './api/gamePlatformApi';
 import { getGenres, getGenresFromRawG, postRawGGenresToDatabase } from './api/genreApi';
 import { getPlatforms, getPlatformsFromRawG, postRawGPlatformsToDatabase } from './api/platformApi';
 import { useEffect, useState } from 'react';
-
+import { Helmet } from "react-helmet";
 
 export const fetchUserGames = async (id, setUserGames) => {
   try {
@@ -47,6 +48,21 @@ export const fetchGames = async (setGames) => {
     setGames(Games);
   } catch (error) {
     console.error('Failed to fetch Games:', error);
+  }
+};
+
+export const fetchGame = async (setGames, games, game_id) => {
+  try {
+    const updatedGame = await getGame(game_id); // fetch updated game object
+
+    // Create a new list with the updated game
+    const updatedGames = games.map(game =>
+      game.id === game_id ? updatedGame : game
+    );
+
+    setGames(updatedGames); // update state
+  } catch (error) {
+    console.error('Failed to update game in list:', error);
   }
 };
 
@@ -241,37 +257,39 @@ function LoginPage() {
 
 }
 
-
 function App() {
-
   return (
-    <GamePlatformProvider>
+    <>
+      <Helmet>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Helmet>
 
-
-      <PlatformProvider>
-        <GameGenreProvider>
-          <GenreProvider>
-            <UserProvider>
-              <AchievementProvider>
-                <UserGameProvider>
-                  <GameProvider>
-                    <Router>
-                      <Routes>
-                        <Route path="/" element={<LoginPage />} />
-                        <Route path="/gamelistpage" element={<GameListPage />} />
-                        <Route path="/reviewpage/:id" element={<ReviewPage />} />
-                        <Route path="/addgamepage" element={<AddGamePage />} />
-                        <Route path="/achievementpage" element={<AchivevementPage />} />
-                      </Routes>
-                    </Router>
-                  </GameProvider>
-                </UserGameProvider>
-              </AchievementProvider>
-            </UserProvider>
-          </GenreProvider>
-        </GameGenreProvider>
-      </PlatformProvider>
-    </GamePlatformProvider>
+      <GamePlatformProvider>
+        <PlatformProvider>
+          <GameGenreProvider>
+            <GenreProvider>
+              <UserProvider>
+                <AchievementProvider>
+                  <UserGameProvider>
+                    <GameProvider>
+                      <Router>
+                        <Routes>
+                          <Route path="/" element={<LoginPage />} />
+                          <Route path="/gamelistpage" element={<GameListPage />} />
+                          <Route path="/reviewpage/:id" element={<ReviewPage />} />
+                          <Route path="/addgamepage" element={<AddGamePage />} />
+                          <Route path="/achievementpage" element={<AchivevementPage />} />
+                        </Routes>
+                      </Router>
+                    </GameProvider>
+                  </UserGameProvider>
+                </AchievementProvider>
+              </UserProvider>
+            </GenreProvider>
+          </GameGenreProvider>
+        </PlatformProvider>
+      </GamePlatformProvider>
+    </>
   );
 }
 

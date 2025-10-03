@@ -26,23 +26,36 @@ export const postUserGameToDatabase = async (newUserGame) => {
 };
 
 
-export const putUserGameToDatabase = async (id, updatedUserGame) => {
+export const putUserGameToDatabase = async (id, userGameData) => {
   try {
-    const response = await axios.put(`${BASE_URL}/UserGame/${id}`, updatedUserGame);
+    const response = await axios.put(`${BASE_URL}/UserGame/${id}`, userGameData, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': '*/*'
+      }
+    });
     return response.data;
   } catch (error) {
-    console.error('Error updating UserGame:', error);
+    console.error('Failed to PUT UserGame:', error);
     throw error;
   }
 };
+
 
 
 export const putUserGameReview = async (id, updatedUserGame) => {
   try {
-    const response = await axios.put(`${BASE_URL}/UserGame/review/${id}`, updatedUserGame);
+    const response = await axios.put(`${BASE_URL}/UserGame/${id}`, updatedUserGame, {
+      headers: { 'Content-Type': 'application/json' }
+    });
     return response.data;
   } catch (error) {
     console.error('Error updating review and recalculating average score:', error);
+    if (error.response) {
+      console.error('Backend response data:', error.response.data);
+      console.error('Backend status:', error.response.status);
+    }
     throw error;
   }
 };
+
