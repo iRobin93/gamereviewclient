@@ -119,6 +119,11 @@ function LoginPage() {
   }, []);
 
 
+
+  useEffect(() => {
+    document.title = "Game Review";
+  }, []);
+
   const handleLogin = async (e) => {
 
 
