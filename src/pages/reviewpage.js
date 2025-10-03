@@ -3,14 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useUserGames } from '../context/UserGameContext';
 import { useGames } from '../context/GameContext';
 import { useEffect } from 'react';
-import { putUserGameToDatabase } from '../api/userGamesApi';
-
+import { putUserGameReview } from '../api/userGamesApi'
 
 function ReviewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { usergames } = useUserGames();
-  const { games } = useGames();
+  const { usergames, setUserGames, setUsergamesNeedRefresh } = useUserGames();
+  const { setGamesNeedRefresh } = useGames();
+  const { games, setGames } = useGames();
   // Find the game by id (id param is string, convert to number)
   const usergame = usergames.find(u => u.id === parseInt(id));
   const reviewGame = games.find(g => g.id === parseInt(usergame.game_id))
@@ -18,10 +18,14 @@ function ReviewPage() {
   const [rating, setRating] = useState(0);
 
 
-useEffect(() => {
-  setReviewText(usergame.reviewText);
-  setRating(usergame.rating);
-}, [usergame.reviewText, usergame.rating]);
+  useEffect(() => {
+    // Find the latest usergame from updated context by id
+    const latestUserGame = usergames.find(u => u.id === parseInt(id));
+    if (latestUserGame) {
+      setReviewText(latestUserGame.reviewText);
+      setRating(latestUserGame.rating);
+    }
+  }, [usergames, id]);
 
 
   if (!usergame) {
@@ -30,15 +34,55 @@ useEffect(() => {
 
   const handleStarClick = (star) => setRating(star);
 
-  const handleSave = () => {
-    console.log('Saving review for game', usergame.title, { reviewText, rating });
-    // TODO: Save review logic here
-    usergame.reviewText = reviewText;
-    usergame.rating = rating;
-    usergame.reviewed = true;
-    putUserGameToDatabase(usergame.id, usergame);
-    navigate('/gamelistpage');
+  const handleSave = async () => {
+    try {
+      const updatedUserGame = {
+        id: usergame.id,
+        reviewText,
+        rating,
+        reviewed: true,
+        status: usergame.status,
+        user: { id: usergame.user_id },   // ✅ full object
+        game: { id: usergame.game_id },   // ✅ full object
+      };
+
+      const result = await putUserGameReview(usergame.id, updatedUserGame);
+      setUsergamesNeedRefresh(true);
+      //setGamesNeedRefresh(true);
+      // ✅ Update the usergames context with the new review
+      setUserGames(prevUserGames =>
+        prevUserGames.map(ug =>
+          ug.id === result.id
+            ? {
+              ...ug,
+              reviewText: result.reviewText,
+              rating: result.rating,
+              reviewed: result.reviewed,
+            }
+            : ug
+        )
+      );
+      console.log("API result:", result);
+
+      // ✅ Update the game's average review score
+      setGames(prevGames =>
+        prevGames.map(game =>
+          game.id === result.game.id
+            ? {
+              ...game,
+              averageReviewScore: result.game.averageReviewScore
+            }
+            : game
+        )
+      );
+      console.log('Review saved and average score updated:', result);
+      navigate('/gamelistpage');
+    } catch (error) {
+      console.error('Failed to save review:', error);
+    }
   };
+
+
 
   const handleCancel = () => {
     navigate('/gamelistpage');

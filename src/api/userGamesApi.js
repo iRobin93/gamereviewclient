@@ -35,3 +35,14 @@ export const putUserGameToDatabase = async (id, updatedUserGame) => {
     throw error;
   }
 };
+
+
+export const putUserGameReview = async (id, updatedUserGame) => {
+  try {
+    const response = await axios.put(`${BASE_URL}/UserGame/review/${id}`, updatedUserGame);
+    return response.data;
+  } catch (error) {
+    console.error('Error updating review and recalculating average score:', error);
+    throw error;
+  }
+};

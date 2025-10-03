@@ -107,3 +107,8 @@ button.active {
   background-color: blue;
   color: white;
 }
+
+.favorited {
+  border: 2px solid gold;
+  background-color: #fffbe6;
+}

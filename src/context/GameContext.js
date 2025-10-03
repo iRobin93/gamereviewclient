@@ -4,9 +4,9 @@ const GameContext = createContext();
 
 export function GameProvider({ children }) {
   const [games, setGames] = useState(null);
-
+  const [gamesNeedRefresh, setGamesNeedRefresh] = useState(false);
   return (
-    <GameContext.Provider value={{ games, setGames }}>
+    <GameContext.Provider value={{ games, setGames, gamesNeedRefresh, setGamesNeedRefresh }}>
       {children}
     </GameContext.Provider>
   );

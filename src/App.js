@@ -31,6 +31,25 @@ import { getPlatforms, getPlatformsFromRawG, postRawGPlatformsToDatabase } from 
 import { useEffect, useState } from 'react';
 
 
+export const fetchUserGames = async (id, setUserGames) => {
+  try {
+    const userGames = await getUserGames(id);
+    await setUserGames(userGames);
+    return userGames;
+  } catch (error) {
+    console.error('Failed to fetch userGames:', error);
+  }
+  return [];
+};
+export const fetchGames = async (setGames) => {
+  try {
+    const Games = await getGames();
+    setGames(Games);
+  } catch (error) {
+    console.error('Failed to fetch Games:', error);
+  }
+};
+
 export const fetchGameGenres = async (userGames, setGameGenres) => {
   try {
 
@@ -87,14 +106,6 @@ function LoginPage() {
   const handleLogin = async (e) => {
 
 
-    const fetchGames = async () => {
-      try {
-        const Games = await getGames();
-        setGames(Games);
-      } catch (error) {
-        console.error('Failed to fetch Games:', error);
-      }
-    };
 
 
     const fetchPlatforms = async () => {
@@ -150,16 +161,7 @@ function LoginPage() {
       }
     };
 
-    const fetchUserGames = async (id) => {
-      try {
-        const userGames = await getUserGames(id);
-        await setUserGames(userGames);
-        return userGames;
-      } catch (error) {
-        console.error('Failed to fetch userGames:', error);
-      }
-      return [];
-    };
+
 
 
 
@@ -181,11 +183,11 @@ function LoginPage() {
 
       setUser(userObject);
 
-      await fetchGames();
+      await fetchGames(setGames);
       await fetchGenres();
       await fetchPlatforms();
 
-      const userGames = await fetchUserGames(userObject.id);
+      const userGames = await fetchUserGames(userObject.id, setUserGames);
       await fetchGamePlatforms(userGames, setGamePlatforms);
       await fetchGameGenres(userGames, setGameGenres);
 

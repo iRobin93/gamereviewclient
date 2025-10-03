@@ -7,28 +7,35 @@ import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
 import { useGameGenres } from '../context/GameGenreContext';
 import { useGamePlatforms } from '../context/GamePlatformContext'
-import { fetchGamePlatforms, fetchGameGenres } from '../App';
+import { fetchGamePlatforms, fetchGameGenres, fetchUserGames } from '../App';
 import { useGenres } from '../context/GenreContext';
 import { usePlatforms } from '../context/PlatformContext'
 import { deleteUserGameFromDatabase } from '../api/userGamesApi'
 import { putUserGameToDatabase } from '../api/userGamesApi'
+import { fetchGames } from '../App'
 
 function GameListPage() {
   const { user } = useUser();
   const [filterShow, setFilterShow] = useState(false);
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
-  const { games } = useGames();
-  const { usergames, setUserGames } = useUserGames();
+  const { games, gamesNeedRefresh, setGamesNeedRefresh, setGames } = useGames();
+  const { usergames, setUserGames, setUsergamesNeedRefresh, usergamesNeedRefresh } = useUserGames();
   const { gamegenres, setGameGenres } = useGameGenres();
-  const { gameplatforms, gamePlatformsNeedRefresh,  setGamePlatformsNeedRefresh, setGamePlatforms} = useGamePlatforms();
+  const { gameplatforms, gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh, setGamePlatforms } = useGamePlatforms();
   const [search, setSearch] = useState('');
   const dropdownRef = useRef(null);
   const { genres } = useGenres();
   const { platforms } = usePlatforms();
   const [activePlatforms, setActivePlatforms] = useState([]);
   const [activeGenres, setActiveGenres] = useState([]);
-
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  
+  const [favorites, setFavorites] = useState(() => {
+    // Initialize from localStorage if needed
+    const saved = localStorage.getItem('favoriteGames');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     if (!user) {
@@ -36,19 +43,43 @@ function GameListPage() {
     }
   }, [user, navigate]);
 
+useEffect(() => {
+  if (!usergamesNeedRefresh) return;
+  console.log('usergames refreshed')
+  const refreshUserGames = async () => {
+    const updatedUserGames = await fetchUserGames(user.id, setUserGames);
+    setUserGames(updatedUserGames);
+    
+    setUsergamesNeedRefresh(false);
+  };
 
+  refreshUserGames();
+}, [usergamesNeedRefresh, setUsergamesNeedRefresh, setUserGames, user]);
 
 
 useEffect(() => {
-  if (!gamePlatformsNeedRefresh) return;
-  const refresh = async () => {
-    await fetchGamePlatforms(usergames, setGamePlatforms);
-    await fetchGameGenres(usergames, setGameGenres)
-    setGamePlatformsNeedRefresh(false);
+  if (!gamesNeedRefresh) return;
+  console.log('games refreshed')
+  const refreshUserGames = async () => {
+    const updatedGames = await fetchGames(setGames);
+    setGames(updatedGames);
+    
+    setGamesNeedRefresh(false);
   };
 
-  refresh();
-}, [gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh, usergames, setGamePlatforms, setGameGenres]);
+  refreshUserGames();
+}, [gamesNeedRefresh, setGamesNeedRefresh, setGames, games]);
+
+  useEffect(() => {
+    if (!gamePlatformsNeedRefresh) return;
+    const refresh = async () => {
+      await fetchGamePlatforms(usergames, setGamePlatforms);
+      await fetchGameGenres(usergames, setGameGenres)
+      setGamePlatformsNeedRefresh(false);
+    };
+
+    refresh();
+  }, [gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh, usergames, setGamePlatforms, setGameGenres]);
 
 
   useEffect(() => {
@@ -183,16 +214,16 @@ useEffect(() => {
       if (gameplatform !== undefined) {
         showGamePlatform = true;
       }
-      else if(activePlatforms.length === 0)
+      else if (activePlatforms.length === 0)
         showGamePlatform = true;
 
       let showGameGenre = false;
-            if (gamegenre !== undefined) {
+      if (gamegenre !== undefined) {
         showGameGenre = true;
       }
-      else if(activeGenres.length === 0)
+      else if (activeGenres.length === 0)
         showGameGenre = true;
-      
+
       return (game && game.title.toLowerCase().includes(search.toLowerCase()) && showGamePlatform && showGameGenre);
     })
     .map(userGame => {
@@ -201,7 +232,7 @@ useEffect(() => {
         ...game,
         userGame_id: userGame.id,
         status: userGame.status,
-        reviewed: userGame.reviewed
+        reviewed: userGame.reviewed,
       };
     });
 
@@ -234,14 +265,30 @@ useEffect(() => {
     });
   };
 
+  const toggleFavorite = (gameId) => {
+    setFavorites(prev => {
+      const isFav = prev.includes(gameId);
+      const updated = isFav ? prev.filter(id => id !== gameId) : [...prev, gameId];
 
+      // Optional: Save to localStorage
+      localStorage.setItem('favoriteGames', JSON.stringify(updated));
+
+      return updated;
+    });
+  };
+
+  const displayedGames = showOnlyFavorites
+    ? filteredUserGames.filter(game => favorites.includes(game.id))
+    : filteredUserGames;
 
   return (
     <div className="game-list-container">
       <h2>🎮 Game List</h2>
       <button onClick={handleAchievement}>Achievements </button>
       <button className={(activePlatforms.length > 0) || (activeGenres.length > 0) ? 'active' : ''} onClick={toggleFilters}>Filter </button>
-
+      <button onClick={() => setShowOnlyFavorites(prev => !prev)}>
+        {showOnlyFavorites ? 'Show All Games' : 'Show Favorites Only'}
+      </button>
 
       {filterShow && (
         <div className="filter-section">
@@ -283,8 +330,8 @@ useEffect(() => {
       />
 
       <div className="game-list">
-        {filteredUserGames.map((mergedGame_UserGame) => (
-          <div key={mergedGame_UserGame.id} className="game-item">
+        {displayedGames.map((mergedGame_UserGame) => (
+          <div key={mergedGame_UserGame.id} className={`game-item ${favorites.includes(mergedGame_UserGame.id) ? 'favorited' : ''}`}>
             <div className="status-column">
               <div title="Completion Status" className="status-cell">
                 {editingStatusId === mergedGame_UserGame.id ? (
@@ -345,8 +392,15 @@ useEffect(() => {
               <p><strong>Genre:</strong> {getGameGenres(mergedGame_UserGame.id)}</p>
               <p><strong>Platform:</strong> {getGamePlatforms(mergedGame_UserGame.id)}</p>
               <p><strong>Release Date:</strong> {mergedGame_UserGame.releaseDate}</p>
+              <p>
+                <strong>Average Review Score:</strong> {mergedGame_UserGame.averageReviewScore?.toFixed(1) ?? "N/A"} / 5
+                {" " + "⭐".repeat(Math.round(mergedGame_UserGame.averageReviewScore ?? 0))}
+              </p>
             </div>
 
+            <button onClick={() => toggleFavorite(mergedGame_UserGame.id)} className="favorite-button">
+              {favorites.includes(mergedGame_UserGame.id) ? '❤️' : '🤍'}
+            </button>
             <div className="game-actions">
               {!mergedGame_UserGame.reviewed && (
                 <button onClick={() => handleReview(mergedGame_UserGame.userGame_id)}>Review</button>
