@@ -1,11 +1,13 @@
 // App.js
 import { HashRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import './App.css';
+import React from 'react';
 import { FaSpinner } from 'react-icons/fa';
 import GameListPage from './pages/gamelistpage';
 import ReviewPage from './pages/reviewpage';
 import AddGamePage from './pages/addGamePage';
 import AchivevementPage from './pages/achievementPage';
+import CreateUserPage from './pages/createuserPage';
 import { UserProvider } from './context/UserContext';
 import { PlatformProvider } from './context/PlatformContext';
 import { GenreProvider } from './context/GenreContext';
@@ -21,7 +23,7 @@ import { UserGameProvider } from './context/UserGameContext';
 import { GameGenreProvider } from './context/GameGenreContext';
 import { AchievementProvider } from './context/AchievementContext';
 import { GamePlatformProvider } from './context/GamePlatformContext';
-import { getUsers } from './api/usersApi';
+import { loginToSite } from './api/usersApi';
 import { getUserGames } from './api/userGamesApi';
 import { getGames } from './api/gameApi';
 import { getGame } from './api/gameApi';
@@ -29,8 +31,10 @@ import { getGameGenres } from './api/gameGenresApi';
 import { getGamePlatforms } from './api/gamePlatformApi';
 import { getGenres, getGenresFromRawG, postRawGGenresToDatabase } from './api/genreApi';
 import { getPlatforms, getPlatformsFromRawG, postRawGPlatformsToDatabase } from './api/platformApi';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Helmet } from "react-helmet";
+import { Link } from 'react-router-dom';
+import gameReviewLogo from "./images/gameReviewLogo.png";
 
 export const fetchUserGames = async (id, setUserGames) => {
   try {
@@ -93,7 +97,6 @@ export const fetchGamePlatforms = async (userGames, setGamePlatforms) => {
 function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [allUsers, setAllUsers] = useState([]);
   const navigate = useNavigate();
   const { setUser } = useUser();
   const { setUserGames } = useUserGames();
@@ -103,31 +106,26 @@ function LoginPage() {
   const { setPlatforms } = usePlatforms();
   const { setGamePlatforms } = useGamePlatforms();
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const users = await getUsers();
-        setAllUsers(users);
-      } catch (error) {
-        console.error('Failed to fetch users:', error);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-
+  const usernameInputRef = useRef(null);
+  const [inputFocus, setInputFocus] = React.useState({ username: false, password: false });
 
   useEffect(() => {
     document.title = "Game Review";
   }, []);
 
+
+  useEffect(() => {
+
+    usernameInputRef.current?.focus();
+
+  }, []);
+
+
+
+
+  
+
   const handleLogin = async (e) => {
-
-
-
 
     const fetchPlatforms = async () => {
       try {
@@ -189,19 +187,22 @@ function LoginPage() {
     e.preventDefault();
     if (isLoggingIn) return;
     setIsLoggingIn(true);
-
-    console.log(allUsers)
     try {
-      const userObject = allUsers.find(
-        u => u.username.trim() === username.trim() &&
-          u.password === password // consider hashing in real apps
-      );
+      const response = await loginToSite({ username, password });
 
-      if (!userObject) {
-        alert('Invalid credentials');
+
+      if (response.success) {
+        console.log("Logged in:", response.data);
+      } else {
+        const statusText = response.status ? ` ${response.status}` : "";
+        const errorText = response.error || "Unknown error";
+        alert(`Login error:${statusText} — ${errorText}`);
         return;
       }
 
+
+
+      const userObject = response.data;
       setUser(userObject);
 
       await fetchGames(setGames);
@@ -215,33 +216,126 @@ function LoginPage() {
       navigate(`/gamelistpage`);
     } catch (error) {
       console.error('Login error:', error);
-      alert('Something went wrong during login.');
+      alert(error);
     } finally {
       setIsLoggingIn(false); // ✅ ensure it's reset even on error
     }
   };
-
+  const styles = {
+    container: {
+      maxWidth: '400px',
+      margin: '3rem auto',
+      padding: '2rem',
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+      backgroundColor: '#fff',
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    },
+    heading: {
+      textAlign: 'center',
+      marginBottom: '1.5rem',
+      color: '#333',
+    },
+    form: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    input: {
+      padding: '0.75rem 1rem',
+      marginBottom: '1rem',
+      fontSize: '1rem',
+      borderRadius: '4px',
+      border: '1px solid #ccc',
+      outline: 'none',
+      transition: 'border-color 0.3s',
+    },
+    inputFocus: {
+      borderColor: '#007bff',
+      boxShadow: '0 0 0 3px rgba(0,123,255,0.25)',
+    },
+    button: {
+      padding: '0.75rem 1rem',
+      fontSize: '1rem',
+      borderRadius: '4px',
+      border: 'none',
+      backgroundColor: '#007bff',
+      color: '#fff',
+      cursor: 'pointer',
+      transition: 'background-color 0.3s',
+    },
+    buttonDisabled: {
+      backgroundColor: '#6c757d',
+      cursor: 'not-allowed',
+    },
+    createUserLink: {
+      marginTop: '1rem',
+      textAlign: 'center',
+      color: '#007bff',
+      textDecoration: 'underline',
+      cursor: 'pointer',
+    },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginTop: '4rem',
+      color: '#666',
+    },
+  };
 
 
 
   return (
-    allUsers && allUsers.length > 0 ? (
-      <div className="App">
-        <h2>Login</h2>
-        <form onSubmit={handleLogin}>
+    (
+      <div style={styles.container}>
+
+        {/* Logo Section */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+          <img
+            src={gameReviewLogo}
+            alt="GameReview Logo"
+            style={{ width: "150px", height: "auto" }}
+          />
+        </div>
+
+        <h2 style={styles.heading}>Login</h2>
+
+        <form onSubmit={handleLogin} style={styles.form}>
           <input
+            ref={usernameInputRef}
             type="text"
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-          /><br />
+            style={{
+              ...styles.input,
+              ...(inputFocus.username ? styles.inputFocus : {}),
+            }}
+            onFocus={() => setInputFocus(f => ({ ...f, username: true }))}
+            onBlur={() => setInputFocus(f => ({ ...f, username: false }))}
+            autoComplete="username"
+            required
+          />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-          /><br />
-          <button type="submit" disabled={isLoggingIn}>
+            style={{
+              ...styles.input,
+              ...(inputFocus.password ? styles.inputFocus : {}),
+            }}
+            onFocus={() => setInputFocus(f => ({ ...f, password: true }))}
+            onBlur={() => setInputFocus(f => ({ ...f, password: false }))}
+            autoComplete="current-password"
+            required
+          />
+          <button
+            type="submit"
+            disabled={isLoggingIn}
+            style={isLoggingIn ? { ...styles.button, ...styles.buttonDisabled } : styles.button}
+          >
             {isLoggingIn ? (
               <>
                 Logging in... <FaSpinner className="spin" />
@@ -251,15 +345,15 @@ function LoginPage() {
             )}
           </button>
         </form>
-      </div>
-    ) : (
-      <div className="App">
-        <h2>Loading...</h2>
-        <FaSpinner className="spin" />
+
+        <div style={styles.createUserLink}>
+          <Link to="/createuserPage" style={{ color: 'inherit', textDecoration: 'inherit' }}>
+            Create User
+          </Link>
+        </div>
       </div>
     )
   );
-
 }
 
 function App() {
@@ -284,6 +378,7 @@ function App() {
                           <Route path="/reviewpage/:id" element={<ReviewPage />} />
                           <Route path="/addgamepage" element={<AddGamePage />} />
                           <Route path="/achievementpage" element={<AchivevementPage />} />
+                          <Route path="/createuserpage" element={<CreateUserPage />} />
                         </Routes>
                       </Router>
                     </GameProvider>

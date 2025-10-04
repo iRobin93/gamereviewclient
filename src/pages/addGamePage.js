@@ -334,7 +334,7 @@ const handleSort = (sorting) => {
         )}
 
         <div style={{ padding: '2rem' }}>
-          <button onClick={() => navigate('/gamelistpage')}>← Back</button>
+          <button class="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
           <h2>Add a Game</h2>
 
           {moreGamesToDisplay && (
@@ -367,7 +367,7 @@ const handleSort = (sorting) => {
               onChange={(e) => setSearchTerm(e.target.value)}
               style={{ width: '60%', padding: '0.5rem' }}
             />
-            <button onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
+            <button class="button" onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
               {loading ? 'Searching...' : 'Search'}
             </button>
           </div>
@@ -394,6 +394,7 @@ const handleSort = (sorting) => {
                   <div>{game.released}</div>
                 </div>
                 <button
+                class="button"
                   onClick={async () => {
 
                     const checkUserGameExist = checkIfUserGameExistsByRawGId(game.id);
@@ -454,7 +455,7 @@ const handleSort = (sorting) => {
 
     return (
       <div style={{ padding: '2rem' }}>
-        <button onClick={() => navigate('/gamelistpage')}>← Back</button>
+        <button class="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
         <h2>Add a Game</h2>
 
         {moreGamesToDisplay && (
@@ -497,7 +498,7 @@ const handleSort = (sorting) => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: '60%', padding: '0.5rem' }}
           />
-          <button onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
+          <button class="button" onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
             {loading ? 'Searching...' : 'Search'}
           </button>
         </div>
@@ -526,6 +527,7 @@ const handleSort = (sorting) => {
                 <div>People has reviewed the game: {game.reviewedCount}</div>
               </div>
               <button
+              class="button"
                 onClick={async () => {
                   const checkUserGameExist = checkIfUserGameExistsByGameReviewId(game.id);
                   if (checkUserGameExist) {

@@ -15,7 +15,7 @@ import { putUserGameToDatabase } from '../api/userGamesApi'
 import { fetchGames } from '../App'
 
 function GameListPage() {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
   const [filterShow, setFilterShow] = useState(false);
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
@@ -37,31 +37,31 @@ function GameListPage() {
     }
   }, [user, navigate]);
 
-useEffect(() => {
-  if (!usergamesNeedRefresh) return;
-  const refreshUserGames = async () => {
-    const updatedUserGames = await fetchUserGames(user.id, setUserGames);
-    setUserGames(updatedUserGames);
-    
-    setUsergamesNeedRefresh(false);
-  };
+  useEffect(() => {
+    if (!usergamesNeedRefresh) return;
+    const refreshUserGames = async () => {
+      const updatedUserGames = await fetchUserGames(user.id, setUserGames);
+      setUserGames(updatedUserGames);
 
-  refreshUserGames();
-}, [usergamesNeedRefresh, setUsergamesNeedRefresh, setUserGames, user]);
+      setUsergamesNeedRefresh(false);
+    };
+
+    refreshUserGames();
+  }, [usergamesNeedRefresh, setUsergamesNeedRefresh, setUserGames, user]);
 
 
-useEffect(() => {
-  if (!gamesNeedRefresh) return;
-  console.log('games refreshed')
-  const refreshUserGames = async () => {
-    const updatedGames = await fetchGames(setGames);
-    setGames(updatedGames);
-    
-    setGamesNeedRefresh(false);
-  };
+  useEffect(() => {
+    if (!gamesNeedRefresh) return;
+    console.log('games refreshed')
+    const refreshUserGames = async () => {
+      const updatedGames = await fetchGames(setGames);
+      setGames(updatedGames);
 
-  refreshUserGames();
-}, [gamesNeedRefresh, setGamesNeedRefresh, setGames, games]);
+      setGamesNeedRefresh(false);
+    };
+
+    refreshUserGames();
+  }, [gamesNeedRefresh, setGamesNeedRefresh, setGames, games]);
 
   useEffect(() => {
     if (!gamePlatformsNeedRefresh) return;
@@ -97,6 +97,12 @@ useEffect(() => {
   if (!user) {
     return null; // or a spinner
   }
+
+
+  const handleLogout = () => {
+  setUser(null)
+  navigate('/');
+};
 
 
   const updateStatus = (id, newStatus) => {
@@ -259,26 +265,26 @@ useEffect(() => {
     });
   };
 
-const toggleFavorite = (usergame_id) => {
-  const updatedUserGames = usergames.map(usergame => {
-    if (usergame.id === usergame_id) {
-      const updated = {
-        ...usergame,
-        favourite: !usergame.favourite
-      };
+  const toggleFavorite = (usergame_id) => {
+    const updatedUserGames = usergames.map(usergame => {
+      if (usergame.id === usergame_id) {
+        const updated = {
+          ...usergame,
+          favourite: !usergame.favourite
+        };
 
-      // Send update to backend
-      putUserGameToDatabase(usergame_id, updated);
+        // Send update to backend
+        putUserGameToDatabase(usergame_id, updated);
 
-      return updated;
-    }
+        return updated;
+      }
 
-    return usergame;
-  });
+      return usergame;
+    });
 
-  // Update state with the modified list
-  setUserGames(updatedUserGames);
-};
+    // Update state with the modified list
+    setUserGames(updatedUserGames);
+  };
 
 
   const displayedGames = showOnlyFavorites
@@ -288,6 +294,9 @@ const toggleFavorite = (usergame_id) => {
   return (
     <div className="game-list-container">
       <h2>🎮 Game List</h2>
+      <button onClick={handleLogout} className="logout-button">
+        Log Out
+      </button>
       <button onClick={handleAchievement}>Achievements </button>
       <button className={(activePlatforms.length > 0) || (activeGenres.length > 0) ? 'active' : ''} onClick={toggleFilters}>Filter </button>
       <button onClick={() => setShowOnlyFavorites(prev => !prev)}>
@@ -421,7 +430,7 @@ const toggleFavorite = (usergame_id) => {
         ))}
       </div>
 
-      <button className="add-game-button" onClick={handleAddGame}>
+      <button className="add-game-button button" onClick={handleAddGame}>
         ➕ Add Game
       </button>
     </div>
