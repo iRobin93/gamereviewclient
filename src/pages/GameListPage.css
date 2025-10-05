@@ -1,32 +1,46 @@
+/* === GLOBAL BACKGROUND === */
+body {
+  background: linear-gradient(135deg, #e9f2ff 0%, #f8f9fa 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
 /* === GLOBAL PAGE CONTAINER === */
-.game-list-container {
+.game-list-container,
+.add-game-container {
   max-width: 1200px;
   margin: 2rem auto;
-  padding: 1.5rem;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  padding: 2rem;
   color: #222;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
 }
 
 /* === HEADER === */
-.game-list-container h2 {
+.game-list-container h2,
+.add-game-container h2 {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.8rem;
   color: #333;
+  font-size: 1.8rem;
 }
 
-/* === BUTTONS === */
+/* === TOP BUTTONS === */
 .top-buttons {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
 }
 
-button {
+/* === BUTTONS === */
+button,
+.button {
   background-color: #007bff;
   color: #fff;
   border: none;
@@ -37,12 +51,14 @@ button {
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-button:hover {
+button:hover,
+.button:hover {
   background-color: #0056b3;
   transform: scale(1.03);
 }
 
-button.active {
+button.active,
+.button.active {
   background-color: #198754;
 }
 
@@ -96,7 +112,9 @@ button.active {
   border-color: #007bff;
 }
 
-.filter-input {
+/* === SEARCH INPUT === */
+.filter-input,
+.search-input {
   width: 100%;
   padding: 0.7rem;
   border: 1px solid #ccc;
@@ -105,7 +123,8 @@ button.active {
   font-size: 1rem;
 }
 
-.filter-input:focus {
+.filter-input:focus,
+.search-input:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
@@ -115,7 +134,7 @@ button.active {
 .game-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
+  gap: 1.2rem;
 }
 
 /* === GAME CARD === */
@@ -133,7 +152,7 @@ button.active {
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
 }
 
-/* Highlight favorited games */
+/* === FAVORITED HIGHLIGHT === */
 .game-item.favorited {
   border: 2px solid #ff4d6d;
 }
@@ -152,6 +171,7 @@ button.active {
   cursor: pointer;
 }
 
+/* === STATUS DROPDOWN === */
 .status-dropdown {
   position: absolute;
   top: 32px;
@@ -191,7 +211,7 @@ button.active {
   transform: scale(1.2);
 }
 
-/* === IMAGE === */
+/* === GAME IMAGE === */
 .cover-image {
   width: 100%;
   height: 200px;
@@ -223,35 +243,51 @@ button.active {
   margin-left: 0.3rem;
 }
 
-/* === ACTION BUTTONS === */
+/* === GAME ACTIONS (bottom buttons) === */
 .game-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 0.8rem;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .game-actions .button {
   flex: 1;
-  margin: 0 0.2rem;
+  text-align: center;
   background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .game-actions .button:hover {
   background-color: #0056b3;
+  transform: scale(1.03);
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 600px) {
-  .top-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
+/* Make sure all buttons are same height */
+.game-actions .button:not(:last-child) {
+  margin-right: 0.5rem;
+}
 
+/* On smaller screens, stack neatly */
+@media (max-width: 600px) {
   .game-actions {
     flex-direction: column;
   }
 
   .game-actions .button {
+    width: 100%;
     margin: 0.3rem 0;
   }
+}
+
+
+.cover-image {
+  height: 160px;
 }

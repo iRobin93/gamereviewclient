@@ -92,3 +92,13 @@
   color: #666;
   font-size: 0.9rem;
 }
+
+
+.achievement-page .game-item {
+  border: 2px solid gold;
+  background-color: #fff7d1;
+}
+
+.achievement-page .status-icon {
+  font-size: 2rem;
+}

@@ -12,7 +12,6 @@ import { postGameToDatabase } from '../api/gameApi';
 import { postGamePlatformToDatabase } from '../api/gamePlatformApi';
 import { postGameGenreToDatabase } from '../api/gameGenresApi';
 import { postOneRawGPlatformsToDatabase } from '../api/platformApi';
-import { BASE_URL } from '../model/generalData';
 import "../css/addgamepage.css"
 import axios from 'axios';
 
@@ -29,7 +28,7 @@ function AddGamePage() {
   const { user } = useUser();
   const { games, setGames } = useGames();
   const { usergames, setUserGames } = useUserGames();
-  const { gameplatforms, setGamePlatforms, setGamePlatformsNeedRefresh } = useGamePlatforms();
+  const { gameplatforms, setGamePlatforms } = useGamePlatforms();
   const { platforms, setPlatforms } = usePlatforms();
   const { genres } = useGenres();
   const { gamegenres, setGameGenres } = useGameGenres();
@@ -241,159 +240,163 @@ function AddGamePage() {
 
   // ✅ UI for RAWG Games
   if (activeSearch === 'rawG') {
+    // ✅ UI for RAWG Games
+    // ✅ UI for RAWG Games
     return (
-      <div style={{ padding: '2rem' }}>
-        {addGamePressed && (
-          <div className="loading-overlay">
-            <p>Adding game, please wait...</p>
-          </div>
-        )}
+      <div className="add-game-container"> {/* <-- same wrapper as GameListPage */}
+        <div className="add-game-content">
+          {addGamePressed && (
+            <div className="loading-overlay">
+              <p>Adding game, please wait...</p>
+            </div>
+          )}
 
-        <button className="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
-        <h2>Add a Game</h2>
-
-        {moreGamesToDisplay && (
-          <div className="warning-box">
-            <strong>More games found. Search more narrowly for better results.</strong>
-          </div>
-        )}
-
-        <button
-          className={activeSearch === 'rawG' ? 'active' : ''}
-          onClick={() => setActiveSearch('rawG')}
-        >RawG Games</button>
-
-        <button
-          className={activeSearch === 'gameReview' ? 'active' : ''}
-          onClick={() => {
-            setActiveSearch('gameReview');
-            setResults(games);
-            setSearchTerm('');
-          }}
-        >GameReview Games</button>
-
-        <div style={{ marginTop: '1rem' }}>
-          <input
-            type="text"
-            placeholder="Search for a game..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '60%', padding: '0.5rem' }}
-          />
-          <button className="button" onClick={handleSearch} disabled={loading}>
-            {loading ? 'Searching...' : 'Search'}
+          <button className="button back-btn" onClick={() => navigate('/gamelistpage')}>
+            ← Back
           </button>
-        </div>
+          <h2>Add a Game</h2>
 
-        <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
-          {results.map((game) => (
-            <li key={game.id} className="game-result-item">
-              <img src={game.background_image} alt={game.name} className="game-thumb" />
-              <div className="game-info">
-                <strong>{game.name}</strong>
-                <div>
-                  {game.released
-                    ? new Date(game.released).toLocaleDateString("no-NO")
-                    : "Not available"}
+          {moreGamesToDisplay && (
+            <div className="warning-box">
+              <strong>More games found. Search more narrowly for better results.</strong>
+            </div>
+          )}
+
+          <div className="search-toggle">
+            <button
+              className={`toggle-btn ${activeSearch === 'rawG' ? 'active' : ''}`}
+              onClick={() => setActiveSearch('rawG')}
+            >
+              RawG Games
+            </button>
+            <button
+              className={`toggle-btn ${activeSearch === 'gameReview' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveSearch('gameReview');
+                setResults(games);
+                setSearchTerm('');
+              }}
+            >
+              GameReview Games
+            </button>
+          </div>
+
+          <div className="search-bar">
+            <input
+              type="text"
+              placeholder="Search for a game..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button className="button" onClick={handleSearch} disabled={loading}>
+              {loading ? 'Searching...' : 'Search'}
+            </button>
+          </div>
+
+          <ul className="game-list">
+            {results.map((game) => (
+              <li key={game.id} className="game-item">
+                <img src={game.background_image} alt={game.name} className="game-thumb" />
+                <div className="game-info">
+                  <strong>{game.name}</strong>
+                  <div>
+                    {game.released
+                      ? new Date(game.released).toLocaleDateString("no-NO")
+                      : "Not available"}
+                  </div>
                 </div>
-              </div>
-              <button
-                className="button"
-                onClick={async () => {
-                  if (checkIfUserGameExistsFromRawG(game)) {
-                    window.alert(`Game ${game.name || game.title} already exists in your list`);
-                    return;
-                  }
-
-                  setAddGamePressed(true);
-
-                  try {
-                    // 🧩 Step 1: Find or create the base game
-                    let gameObject = games.find(
-                      (g) => g.rawGId === game.rawGId || g.id === game.id
-                    );
-
-                    const createGenreAndPlatforms = !gameObject;
-
-                    if (!gameObject) {
-                      const newGame = {
-                        title: game.name || game.title,
-                        coverImageUrl: game.background_image || game.coverImageUrl,
-                        releaseDate: normalizeReleaseDate(game.released || game.releaseDate),
-                        rawGId: game.rawGId || (activeSearch === "rawG" ? game.id : null),
-                      };
-
-                      gameObject = await createGame(newGame);
-                    }
-
-                    // 🧩 Step 2: Create the user-game link
-                    const newUserGame = {
-                      rating: undefined,
-                      reviewed: false,
-                      reviewText: "",
-                      status: "NotStarted",
-                      game_id: gameObject.id,
-                      user_id: user.id,
-                    };
-                    await postUserGameToDatabase(newUserGame);
-                    setUserGames([...usergames, newUserGame]);
-
-
-                    // 🧩 Step 3: Create game genres & platforms if needed
-                    if (createGenreAndPlatforms && game.platforms && game.genres) {
-                      await createGamePlatforms(game.platforms, gameObject.id);
-                      await createGameGenres(game.genres, gameObject.id);
-                      //setGamePlatformsNeedRefresh(true);
-                    }
-
-                    // 🧩 Step 4: Refetch everything so new data shows immediately
-
-
-                    // ✅ Navigate to gamelist (with updated data)
-                    navigate("/gamelistpage");
-                  } catch (err) {
-                    console.error("❌ Failed to add game:", err);
-                    window.alert("Failed to add game. Please try again.");
-                  } finally {
-                    setAddGamePressed(false);
-                  }
-                }}
-
-              >
-                Add
-              </button>
-            </li>
-          ))}
-        </ul>
+                <div className="game-actions">
+                  <button
+                    className="button"
+                    onClick={async () => {
+                      if (checkIfUserGameExistsFromRawG(game)) {
+                        window.alert(`Game ${game.name || game.title} already exists in your list`);
+                        return;
+                      }
+                      setAddGamePressed(true);
+                      try {
+                        let gameObject = games.find(
+                          (g) => g.rawGId === game.rawGId || g.id === game.id
+                        );
+                        const createGenreAndPlatforms = !gameObject;
+                        if (!gameObject) {
+                          const newGame = {
+                            title: game.name || game.title,
+                            coverImageUrl: game.background_image || game.coverImageUrl,
+                            releaseDate: normalizeReleaseDate(game.released || game.releaseDate),
+                            rawGId: game.rawGId || (activeSearch === "rawG" ? game.id : null),
+                          };
+                          gameObject = await createGame(newGame);
+                        }
+                        const newUserGame = {
+                          rating: undefined,
+                          reviewed: false,
+                          reviewText: "",
+                          status: "NotStarted",
+                          game_id: gameObject.id,
+                          user_id: user.id,
+                        };
+                        await postUserGameToDatabase(newUserGame);
+                        setUserGames([...usergames, newUserGame]);
+                        if (createGenreAndPlatforms && game.platforms && game.genres) {
+                          await createGamePlatforms(game.platforms, gameObject.id);
+                          await createGameGenres(game.genres, gameObject.id);
+                        }
+                        navigate("/gamelistpage");
+                      } catch (err) {
+                        console.error("❌ Failed to add game:", err);
+                        window.alert("Failed to add game. Please try again.");
+                      } finally {
+                        setAddGamePressed(false);
+                      }
+                    }}
+                  >
+                    Add
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     );
+
   }
 
+
   // ✅ UI for GameReview Games
-  return (
-    <div style={{ padding: '2rem' }}>
-      <button className="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
+ return (
+  <div className="add-game-container"> {/* same background wrapper */}
+    <div className="add-game-content">
+      <button className="button back-btn" onClick={() => navigate('/gamelistpage')}>
+        ← Back
+      </button>
       <h2>Add a Game</h2>
 
-      <button
-        className={activeSearch === 'rawG' ? 'active' : ''}
-        onClick={() => {
-          setActiveSearch('rawG');
-          setResults([]);
-          setSearchTerm('');
-        }}
-      >RawG Games</button>
-
-      <button
-        className={activeSearch === 'gameReview' ? 'active' : ''}
-        onClick={() => setActiveSearch('gameReview')}
-      >GameReview Games</button>
+      <div className="search-toggle">
+        <button
+          className={`toggle-btn ${activeSearch === 'rawG' ? 'active' : ''}`}
+          onClick={() => {
+            setActiveSearch('rawG');
+            setResults([]);
+            setSearchTerm('');
+          }}
+        >
+          RawG Games
+        </button>
+        <button
+          className={`toggle-btn ${activeSearch === 'gameReview' ? 'active' : ''}`}
+          onClick={() => setActiveSearch('gameReview')}
+        >
+          GameReview Games
+        </button>
+      </div>
 
       <div className="sort-buttons">
         {sortingOptions.map((sorting) => (
           <button
             key={sorting.title}
-            className={activeSort === sorting.title ? 'active' : ''}
+            className={`toggle-btn ${activeSort === sorting.title ? 'active' : ''}`}
             onClick={() => handleSort(sorting)}
           >
             {sorting.title}
@@ -401,22 +404,21 @@ function AddGamePage() {
         ))}
       </div>
 
-      <div>
+      <div className="search-bar">
         <input
           type="text"
           placeholder="Search for a game..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          style={{ width: '60%', padding: '0.5rem' }}
         />
         <button className="button" onClick={handleSearch} disabled={loading}>
           {loading ? 'Searching...' : 'Search'}
         </button>
       </div>
 
-      <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
+      <ul className="game-list">
         {results.map((game) => (
-          <li key={game.id} className="game-result-item">
+          <li key={game.id} className="game-item">
             <img src={game.coverImageUrl} alt={game.title} className="game-thumb" />
             <div className="game-info">
               <strong>{game.title}</strong>
@@ -444,17 +446,12 @@ function AddGamePage() {
                     window.alert(`Game ${game.name || game.title} already exists in your list`);
                     return;
                   }
-
                   setAddGamePressed(true);
-
                   try {
-                    // 🧩 Step 1: Find or create the base game
                     let gameObject = games.find(
                       (g) => g.rawGId === game.rawGId || g.id === game.id
                     );
-
                     const createGenreAndPlatforms = !gameObject;
-
                     if (!gameObject) {
                       const newGame = {
                         title: game.name || game.title,
@@ -462,11 +459,8 @@ function AddGamePage() {
                         releaseDate: normalizeReleaseDate(game.released || game.releaseDate),
                         rawGId: game.rawGId || (activeSearch === "rawG" ? game.id : null),
                       };
-
                       gameObject = await createGame(newGame);
                     }
-
-                    // 🧩 Step 2: Create the user-game link
                     const newUserGame = {
                       rating: undefined,
                       reviewed: false,
@@ -476,29 +470,11 @@ function AddGamePage() {
                       user_id: user.id,
                     };
                     await postUserGameToDatabase(newUserGame);
-
-                    // 🧩 Step 3: Create game genres & platforms if needed
+                    setUserGames([...usergames, newUserGame]);
                     if (createGenreAndPlatforms && game.platforms && game.genres) {
                       await createGamePlatforms(game.platforms, gameObject.id);
                       await createGameGenres(game.genres, gameObject.id);
-                      setGamePlatformsNeedRefresh(true);
                     }
-
-                    // 🧩 Step 4: Refetch everything so new data shows immediately
-                    const [updatedGamesResponse, updatedUserGamesResponse, gpResponse, ggResponse] =
-                      await Promise.all([
-                        axios.get(`${BASE_URL}/Game`),
-                        axios.get(`${BASE_URL}/UserGame`),
-                        axios.get(`${BASE_URL}/GamePlatform`),
-                        axios.get(`${BASE_URL}/GameGenre`),
-                      ]);
-
-                    setGames(updatedGamesResponse.data);
-                    setUserGames(updatedUserGamesResponse.data);
-                    setGamePlatforms(gpResponse.data);
-                    setGameGenres(ggResponse.data);
-
-                    // ✅ Navigate to gamelist (with updated data)
                     navigate("/gamelistpage");
                   } catch (err) {
                     console.error("❌ Failed to add game:", err);
@@ -526,7 +502,10 @@ function AddGamePage() {
         ))}
       </ul>
     </div>
-  );
+  </div>
+);
+
+
 }
 
 export default AddGamePage;

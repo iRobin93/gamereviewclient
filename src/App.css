@@ -61,3 +61,24 @@ input[type="email"] {
   border-radius: 8px;
   font-size: 1rem;
 }
+
+
+/* === GLOBAL PAGE BACKGROUND === */
+body {
+  background: linear-gradient(135deg, #e9f2ff 0%, #f8f9fa 100%);
+  background-attachment: fixed;
+  background-size: cover;
+  margin: 0;
+  padding: 0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Optional: make content containers stand out slightly */
+.page-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
