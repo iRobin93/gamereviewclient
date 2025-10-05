@@ -100,9 +100,9 @@ function GameListPage() {
 
 
   const handleLogout = () => {
-  setUser(null)
-  navigate('/');
-};
+    setUser(null)
+    navigate('/');
+  };
 
 
   const updateStatus = (id, newStatus) => {
@@ -173,6 +173,10 @@ function GameListPage() {
     navigate(`/reviewpage/${id}`);
   };
 
+const handleViewReviews = (game) => {
+  navigate(`/reviews/${game.id}`, { state: { game } });
+};
+
   const toggleFilters = () => {
     setFilterShow(!filterShow)
   };
@@ -233,6 +237,7 @@ function GameListPage() {
         status: userGame.status,
         favourite: userGame.favourite,
         reviewed: userGame.reviewed,
+        reviewedDate: userGame.reviewedDate,
       };
     });
 
@@ -294,23 +299,42 @@ function GameListPage() {
   return (
     <div className="game-list-container">
       <h2>🎮 Game List</h2>
-      <button onClick={handleLogout} className="logout-button">
-        Log Out
-      </button>
-      <button onClick={handleAchievement}>Achievements </button>
-      <button className={(activePlatforms.length > 0) || (activeGenres.length > 0) ? 'active' : ''} onClick={toggleFilters}>Filter </button>
-      <button onClick={() => setShowOnlyFavorites(prev => !prev)}>
-        {showOnlyFavorites ? 'Show All Games' : 'Show Favorites Only'}
-      </button>
+
+      <div className="top-buttons">
+        <button onClick={handleLogout} className="logout-button">
+          Log Out
+        </button>
+        <button onClick={handleAchievement}>Achievements</button>
+        <button
+          className={
+            activePlatforms.length > 0 || activeGenres.length > 0
+              ? "active"
+              : ""
+          }
+          onClick={toggleFilters}
+        >
+          Filter
+        </button>
+        <button onClick={() => setShowOnlyFavorites((prev) => !prev)}>
+          {showOnlyFavorites ? "Show All Games" : "Show Favorites Only"}
+        </button>
+        <button className="add-game-button button" onClick={handleAddGame}>
+          ➕ Add Game
+        </button>
+      </div>
 
       {filterShow && (
         <div className="filter-section">
           <h3>Filter by Platform</h3>
           <div className="filter-buttons">
-            {platforms.map(platform => (
+            {platforms.map((platform) => (
               <button
                 key={platform.id}
-                className={activePlatforms.some(p => p.id === platform.id) ? 'active' : ''}
+                className={
+                  activePlatforms.some((p) => p.id === platform.id)
+                    ? "active"
+                    : ""
+                }
                 onClick={() => handlePlatformFilter(platform)}
               >
                 {platform.platformName}
@@ -320,16 +344,17 @@ function GameListPage() {
 
           <h3>Filter by Genre</h3>
           <div className="filter-buttons">
-            {genres.map(genre => (
+            {genres.map((genre) => (
               <button
                 key={genre.id}
-                className={activeGenres.some(g => g.id === genre.id) ? 'active' : ''}
+                className={
+                  activeGenres.some((g) => g.id === genre.id) ? "active" : ""
+                }
                 onClick={() => handleGenreFilter(genre)}
               >
                 {genre.genreName}
               </button>
             ))}
-
           </div>
         </div>
       )}
@@ -338,103 +363,177 @@ function GameListPage() {
         type="text"
         placeholder="Filter by title..."
         value={search}
-        onChange={(e) => setSearch(e.target.value, activePlatforms, activeGenres)}
+        onChange={(e) =>
+          setSearch(e.target.value, activePlatforms, activeGenres)
+        }
         className="filter-input"
       />
 
       <div className="game-list">
         {displayedGames.map((mergedGame_UserGame) => (
-          <div key={mergedGame_UserGame.id} className={`game-item ${mergedGame_UserGame.favourite ? 'favorited' : ''}`}>
-            <div className="status-column">
-              <div title="Completion Status" className="status-cell">
-                {editingStatusId === mergedGame_UserGame.id ? (
-                  <div ref={dropdownRef} className="custom-dropdown">
-                    <div className="dropdown-selected">
-                      {mergedGame_UserGame.status === 'Finished'
-                        ? '✅ Completed'
-                        : mergedGame_UserGame.status === 'InProgress'
-                          ? '🕹️ Started'
-                          : '❌ Not Started'}
-                    </div>
-                    <div
-                      className="dropdown-option"
-                      onClick={() => updateStatus(mergedGame_UserGame.userGame_id, 'NotStarted')}
-                    >
-                      ❌ Not Started
-                    </div>
-                    <div
-                      className="dropdown-option"
-                      onClick={() => updateStatus(mergedGame_UserGame.userGame_id, 'InProgress')}
-                    >
-                      🕹️ Started
-                    </div>
-                    <div
-                      className="dropdown-option"
-                      onClick={() => updateStatus(mergedGame_UserGame.userGame_id, 'Finished')}
-                    >
-                      ✅ Completed
-                    </div>
-                  </div>
-                ) : (
-                  <span
-                    onClick={() =>
-                      setEditingStatusId(editingStatusId === mergedGame_UserGame.id ? null : mergedGame_UserGame.id)
-                    }
-                    style={{ cursor: 'pointer' }}
-                  >
-                    {mergedGame_UserGame.status === 'Finished'
-                      ? '✅'
-                      : mergedGame_UserGame.status === 'InProgress'
-                        ? '🕹️'
-                        : '❌'}
-                  </span>
-                )}
+          <div
+            key={mergedGame_UserGame.id}
+            className={`game-item ${mergedGame_UserGame.favourite ? "favorited" : ""
+              }`}
+          >
+            {/* --- HEADER SECTION --- */}
+            <div className="card-header">
+              {/* Status Icon / Dropdown */}
+              <div
+                className="status-icon"
+                title={`Status: ${mergedGame_UserGame.status}`}
+                onClick={() =>
+                  setEditingStatusId(
+                    editingStatusId === mergedGame_UserGame.id
+                      ? null
+                      : mergedGame_UserGame.id
+                  )
+                }
+              >
+                {mergedGame_UserGame.status === "Finished"
+                  ? "✅"
+                  : mergedGame_UserGame.status === "InProgress"
+                    ? "🕹️"
+                    : "❌"}
+              </div>
 
-              </div>
-              <div title="Review Status" onClick={() =>
-                handleReview(mergedGame_UserGame.userGame_id)
-              }>
-                {mergedGame_UserGame.reviewed ? '📝' : '✏️'}
-              </div>
+              {editingStatusId === mergedGame_UserGame.id && (
+                <div className="status-dropdown">
+                  <div
+                    onClick={() =>
+                      updateStatus(
+                        mergedGame_UserGame.userGame_id,
+                        "NotStarted"
+                      )
+                    }
+                  >
+                    ❌ Not Started
+                  </div>
+                  <div
+                    onClick={() =>
+                      updateStatus(
+                        mergedGame_UserGame.userGame_id,
+                        "InProgress"
+                      )
+                    }
+                  >
+                    🕹️ In Progress
+                  </div>
+                  <div
+                    onClick={() =>
+                      updateStatus(mergedGame_UserGame.userGame_id, "Finished")
+                    }
+                  >
+                    ✅ Finished
+                  </div>
+                </div>
+              )}
+
+              {/* Favorite Button */}
+              <button
+                onClick={() =>
+                  toggleFavorite(mergedGame_UserGame.userGame_id)
+                }
+                className="favorite-button"
+              >
+                {mergedGame_UserGame.favourite ? "❤️" : "🤍"}
+              </button>
             </div>
 
-            <img src={mergedGame_UserGame.coverImageUrl} alt={mergedGame_UserGame.title} className="cover-image" />
+            {/* --- MAIN CONTENT --- */}
+            <img
+              src={mergedGame_UserGame.coverImageUrl}
+              alt={mergedGame_UserGame.title}
+              className="cover-image"
+            />
 
             <div className="game-details">
               <h3>{mergedGame_UserGame.title}</h3>
-              <p><strong>Genre:</strong> {getGameGenres(mergedGame_UserGame.id)}</p>
-              <p><strong>Platform:</strong> {getGamePlatforms(mergedGame_UserGame.id)}</p>
-              <p><strong>Release Date:</strong> {mergedGame_UserGame.releaseDate}</p>
               <p>
-                <strong>Average Review Score:</strong> {mergedGame_UserGame.averageReviewScore?.toFixed(1) ?? "0"} / 5
-                {" " + "⭐".repeat(Math.round(mergedGame_UserGame.averageReviewScore ?? 0))}
+                <strong>Genre:</strong>{" "}
+                {getGameGenres(mergedGame_UserGame.id)}
+              </p>
+              <p>
+                <strong>Platform:</strong>{" "}
+                {getGamePlatforms(mergedGame_UserGame.id)}
+              </p>
+
+              <p>
+                <strong>Release Date:</strong>{" "}
+                {mergedGame_UserGame.releaseDate
+                  ? new Date(
+                    mergedGame_UserGame.releaseDate
+                  ).toLocaleDateString("no-NO", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
+                  : "Not available"}
+              </p>
+
+              <p>
+                <strong>Reviewed Date:</strong>{" "}
+                {mergedGame_UserGame.reviewedDate
+                  ? new Date(
+                    mergedGame_UserGame.reviewedDate
+                  ).toLocaleDateString("no-NO")
+                  : "Not available"}
+              </p>
+
+              <p>
+                <strong>Average Review Score:</strong>{" "}
+                {mergedGame_UserGame.averageReviewScore?.toFixed(1) ?? "0"} / 5.0{" "}
+                {Array.from({ length: 5 }, (_, i) => (
+                  <span key={i} className="star">
+                    {i <
+                      Math.round(mergedGame_UserGame.averageReviewScore ?? 0)
+                      ? "★"
+                      : "☆"}
+                  </span>
+                ))}
               </p>
             </div>
 
-            <button onClick={() => toggleFavorite(mergedGame_UserGame.userGame_id)} className="favorite-button">
-              {mergedGame_UserGame.favourite ? '❤️' : '🤍'}
-            </button>
+            {/* --- ACTION BUTTONS --- */}
             <div className="game-actions">
               {!mergedGame_UserGame.reviewed && (
-                <button onClick={() => handleReview(mergedGame_UserGame.userGame_id)}>Review</button>
+                <button
+                  className="button"
+                  onClick={() =>
+                    handleReview(mergedGame_UserGame.userGame_id)
+                  }
+                >
+                  Review
+                </button>
               )}
 
-            </div>
-            <div className="game-actions">
+              <button
+                className="button"
+                onClick={() => handleViewReviews(mergedGame_UserGame)}
+              >
+                View Reviews
+              </button>
 
-              <button onClick={() => handleDeleteUserGame(mergedGame_UserGame.userGame_id, mergedGame_UserGame.title)}>Delete</button>
-
-
+              <button
+                className="button"
+                onClick={() =>
+                  handleDeleteUserGame(
+                    mergedGame_UserGame.userGame_id,
+                    mergedGame_UserGame.title
+                  )
+                }
+              >
+                Delete
+              </button>
             </div>
           </div>
         ))}
       </div>
-
-      <button className="add-game-button button" onClick={handleAddGame}>
-        ➕ Add Game
-      </button>
     </div>
   );
+
+
+
 }
 
 export default GameListPage;

@@ -5,6 +5,7 @@ import React from 'react';
 import { FaSpinner } from 'react-icons/fa';
 import GameListPage from './pages/gamelistpage';
 import ReviewPage from './pages/reviewpage';
+import ViewReviewPage from './pages/viewReviewPage';
 import AddGamePage from './pages/addGamePage';
 import AchivevementPage from './pages/achievementPage';
 import CreateUserPage from './pages/createuserPage';
@@ -379,6 +380,7 @@ function App() {
                           <Route path="/addgamepage" element={<AddGamePage />} />
                           <Route path="/achievementpage" element={<AchivevementPage />} />
                           <Route path="/createuserpage" element={<CreateUserPage />} />
+                          <Route path="/reviews/:gameId" element={<ViewReviewPage />} />
                         </Routes>
                       </Router>
                     </GameProvider>

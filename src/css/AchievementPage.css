@@ -1,53 +1,94 @@
 .achievement-page {
-  max-width: 800px;
-  margin: 0 auto;
   padding: 2rem;
-  text-align: center;
-  font-family: 'Segoe UI', sans-serif;
+  background-color: #f9f9fb;
+  min-height: 100vh;
+  color: #222;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.achievement-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 80%;
+  max-width: 900px;
+  margin-bottom: 2rem;
+}
+
+.achievement-header h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #222;
+  margin: 0;
 }
 
 .back-button {
-  margin-bottom: 2rem;
-  padding: 0.5rem 1rem;
-  background-color: #ddd;
-  border: none;
-  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 0.5rem 1.2rem;
+  border-radius: 10px;
   cursor: pointer;
-  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.back-button:hover {
+  background: #f2f2f2;
+  transform: scale(1.03);
+}
+
+.status-text {
+  color: #666;
+  margin-top: 1rem;
+  font-style: italic;
+}
+
+.error-text {
+  color: #d9534f;
 }
 
 .achievement-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 1.5rem;
+  width: 80%;
+  max-width: 1000px;
 }
 
 .achievement-card {
-  background: linear-gradient(135deg, #f0f0f0, #ffffff);
-  border: 1px solid #ccc;
-  border-radius: 12px;
-  width: 220px;
-  padding: 1.5rem 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  background: #ffffff;
+  border: 1px solid #eee;
+  border-radius: 16px;
+  padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  transition: transform 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .achievement-card:hover {
-  transform: scale(1.05);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 }
 
 .achievement-icon {
   font-size: 2.5rem;
-  line-height: 1;
+  flex-shrink: 0;
 }
 
-.achievement-label {
-  font-size: 1.1rem;
-  font-weight: bold;
-  text-align: left;
-  flex: 1;
+.achievement-info h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.achievement-info p {
+  margin: 0.3rem 0 0;
+  color: #666;
+  font-size: 0.9rem;
 }

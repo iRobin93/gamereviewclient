@@ -1,20 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
 import { useUser } from '../context/UserContext';
-import { useGamePlatforms } from '../context/GamePlatformContext'
-import { useGameGenres } from '../context/GameGenreContext'
-import { usePlatforms } from '../context/PlatformContext'
-import { useGenres } from '../context/GenreContext'
-import { postUserGameToDatabase } from '../api/userGamesApi'
-import { postGameToDatabase } from '../api/gameApi'
-import { postGamePlatformToDatabase } from '../api/gamePlatformApi'
-import { postGameGenreToDatabase } from '../api/gameGenresApi'
-import { postOneRawGPlatformsToDatabase } from '../api/platformApi'
-import { fetchGameGenres } from '../App'
-import { fetchGamePlatforms } from '../App'
-//import '../css/addgamepage.css';
+import { useGamePlatforms } from '../context/GamePlatformContext';
+import { useGameGenres } from '../context/GameGenreContext';
+import { usePlatforms } from '../context/PlatformContext';
+import { useGenres } from '../context/GenreContext';
+import { postUserGameToDatabase } from '../api/userGamesApi';
+import { postGameToDatabase } from '../api/gameApi';
+import { postGamePlatformToDatabase } from '../api/gamePlatformApi';
+import { postGameGenreToDatabase } from '../api/gameGenresApi';
+import { postOneRawGPlatformsToDatabase } from '../api/platformApi';
+import { BASE_URL } from '../model/generalData';
+import "../css/addgamepage.css"
 import axios from 'axios';
 
 function AddGamePage() {
@@ -22,179 +21,119 @@ function AddGamePage() {
   const [moreGamesToDisplay, setMoreGamesDisplay] = useState(false);
   const [addGamePressed, setAddGamePressed] = useState(false);
   const [loading, setLoading] = useState(false);
-  const apiKey = "b1a02be62e9140459f53df733ff56c1e"; // Secure via env
+  const [results, setResults] = useState([]);
+  const [activeSearch, setActiveSearch] = useState('rawG');
+  const [activeSort, setActiveSort] = useState('');
+
   const navigate = useNavigate();
   const { user } = useUser();
   const { games, setGames } = useGames();
-  const [results, setResults] = useState([]);
   const { usergames, setUserGames } = useUserGames();
   const { gameplatforms, setGamePlatforms, setGamePlatformsNeedRefresh } = useGamePlatforms();
   const { platforms, setPlatforms } = usePlatforms();
   const { genres } = useGenres();
   const { gamegenres, setGameGenres } = useGameGenres();
-  const [activeSearch, setActiveSearch] = useState('rawG')
-  const [activeSort, setActiveSort] = useState('');
+
+  const apiKey = "b1a02be62e9140459f53df733ff56c1e"; // Ideally from .env
+
   const sortingOptions = [
     { title: 'Reviewed Count', key: 'reviewedCount' },
-    { title: 'People has game', key: 'userGameCount' },
+    { title: 'People Has Game', key: 'userGameCount' },
     { title: 'Average Review Score', key: 'averageReviewScore' },
-    
   ];
 
-  useEffect(() => {
-    if (usergames.length > 0) {
-      fetchGameGenres(usergames, setGameGenres);
-      fetchGamePlatforms(usergames, setGamePlatforms);
-    }
-  }, [usergames, setGameGenres, setGamePlatforms]);
-
-
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
-    setLoading(true);
-
-    if (activeSearch === 'rawG') {
-
-      try {
-        const response = await axios.get('https://api.rawg.io/api/games', {
-          params: {
-            key: apiKey,
-            search: searchTerm,
-            page_size: 40,
-            esrb_rating: "everyone,teen,everyone-10-plus",
-
-          }
-        });
-
-
-
-        const data = response.data;
-
-        // Filter out games with adult/NSFW tags
-        const filtered = data.results.filter((game) => {
-          if (!game.tags) return true; // If no tags, allow by default
-          const tagSlugs = game.tags.map(tag => tag.slug.toLowerCase());
-          const hasAdultTag = tagSlugs.some(tag =>
-            ['nsfw',
-              'adult',
-              'sexual-content',
-              'nudity',
-              'hentai',
-              'erotic',
-              'mature',
-              'porn',
-              'sex',
-              '18-plus',
-              '18',
-              'explicit'].includes(tag)
-          );
-          return !hasAdultTag;
-        });
-        setResults(filtered || []);
-        if (data.next != null)
-          setMoreGamesDisplay(true);
-        else
-          setMoreGamesDisplay(false);
-      } catch (err) {
-        console.error('Search failed:', err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    else {
-      try {
-        const filteredGames = games
-          .filter(Game => {
-            return (Game.title.toLowerCase().includes(searchTerm.toLowerCase()));
-          })
-
-        setResults(filteredGames);
-      } catch (err) {
-        console.error('Search failed:', err);
-      }
-      finally {
-        setLoading(false);
-      }
-
-    }
-
-  }
-
-
-
-  const getNewGamePlatformId = () => {
-    const existingIds = gameplatforms.map(gameplatform => gameplatform.id);
-    let id = 1;
-    while (existingIds.includes(id)) {
-      id++;
-    }
-    return id;
+  // ✅ Helper: Create new game
+  const createGame = async (newGame) => {
+    const savedGame = await postGameToDatabase(newGame);
+    setGames([...games, savedGame]);
+    return savedGame;
   };
 
+  // ✅ NEW: Unified check (works for both RawG and GameReview games)
+  const checkIfUserGameExists = (game) => {
+    if (!game || !games?.length || !usergames?.length || !user?.id) return false;
+
+    // Try matching by rawGId first, fallback to internal id
+    const existingGame = games.find((g) =>
+      game.rawGId
+        ? g.rawGId === game.rawGId
+        : g.id === game.id
+    );
+
+    if (!existingGame) return false;
+
+    // Check if the current user already has a link to this game
+    return usergames.some(
+      (u) => u.game_id === existingGame.id && u.user_id === user.id
+    );
+  };
+
+
+  // ✅ Create new GameGenres
   const getNewGameGenreId = () => {
-    const existingIds = gamegenres.map(gamegenre => gamegenre.id);
+    const ids = gamegenres.map((g) => g.id);
     let id = 1;
-    while (existingIds.includes(id)) {
-      id++;
-    }
+    while (ids.includes(id)) id++;
     return id;
   };
 
-  const getPlatform_idByRawGId = (rawGId) => {
-    const platform = platforms.find(p => p.rawGId === rawGId)
-    if (platform)
-      return platform.id;
-    return undefined;
+  const getGenre_id = (rawGId) =>
+    genres.find((g) => g.rawGId === rawGId)?.id;
+
+  const createGameGenres = async (rawGArrayOfGenres, gameId) => {
+    const newGenres = rawGArrayOfGenres
+      .filter((genre) => {
+        const genreId = getGenre_id(genre.id);
+        return !gamegenres.find((g) => g.genre_id === genreId && g.game_id === gameId);
+      })
+      .map((genre) => ({
+        game_id: gameId,
+        id: getNewGameGenreId(),
+        genre_id: getGenre_id(genre.id),
+      }));
+
+    if (newGenres.length === 0) return;
+
+    setGameGenres((prev) => [...prev, ...newGenres]);
+    for (const genre of newGenres) await postGameGenreToDatabase(genre);
   };
 
-  const getGenre_id = (rawGId) => {
-    const genre = genres.find(g => g.rawGId === rawGId)
-    return genre.id;
+  // ✅ Create new GamePlatforms
+  const getNewGamePlatformId = () => {
+    const ids = gameplatforms.map((g) => g.id);
+    let id = 1;
+    while (ids.includes(id)) id++;
+    return id;
   };
 
-
+  const getPlatform_idByRawGId = (rawGId) =>
+    platforms.find((p) => p.rawGId === rawGId)?.id;
 
   const createGamePlatforms = async (rawGArrayOfPlatforms, gameId) => {
     const newGamePlatforms = [];
 
     for (const entry of rawGArrayOfPlatforms) {
-
       const rawPlatformId = entry.platform.id;
       const rawPlatformName = entry.platform.name;
-
-      // STEP 2: Try to map to internal platform_id
       let platformId = getPlatform_idByRawGId(rawPlatformId);
 
-      // STEP 2b: If not found, create and store a new platform
       if (!platformId) {
-        const newPlatform = {
-          rawGId: rawPlatformId,
-          platformName: rawPlatformName,
-        };
-
+        const newPlatform = { rawGId: rawPlatformId, platformName: rawPlatformName };
         try {
-          // Post to backend and get assigned id if needed
           const savedPlatform = await postOneRawGPlatformsToDatabase(newPlatform);
-          platformId = savedPlatform.id; // Adjust depending on your backend response
+          platformId = savedPlatform.id;
           setPlatforms((prev) => [...prev, savedPlatform]);
-          console.log(`➕ Created new platform: ${rawPlatformName} (id: ${platformId})`);
         } catch (err) {
-          console.error("❌ Failed to post new platform:", newPlatform, err);
-          continue; // Skip this platform if creation failed
+          console.error("❌ Failed to create platform:", err);
+          continue;
         }
       }
 
-      // STEP 3: Check for duplicates
       const alreadyExists = gameplatforms.some(
         (g) => g.platform_id === platformId && g.game_id === gameId
       );
+      if (alreadyExists) continue;
 
-      if (alreadyExists) {
-        console.log(`ℹ️ Platform already exists for game ${gameId}:`, platformId);
-        continue;
-      }
-
-      // STEP 4: Add to new platforms list
       newGamePlatforms.push({
         game_id: gameId,
         id: getNewGamePlatformId(),
@@ -202,295 +141,119 @@ function AddGamePage() {
       });
     }
 
-    // No new platforms to add
-    if (newGamePlatforms.length === 0) {
-      console.log("✅ No new platforms to add.");
-      return;
-    }
+    if (newGamePlatforms.length === 0) return;
 
-    // Optimistically update UI using functional state update
     setGamePlatforms((prev) => [...prev, ...newGamePlatforms]);
+    for (const gp of newGamePlatforms) await postGamePlatformToDatabase(gp);
+  };
 
-    // Send new platforms to backend
-    for (const platform of newGamePlatforms) {
+  // 🔍 Search Handler
+  const handleSearch = async () => {
+    if (!searchTerm.trim()) return;
+    setLoading(true);
+
+    console.log("🔍 Active search mode:", activeSearch);
+
+    if (activeSearch === 'rawG') {
       try {
-        await postGamePlatformToDatabase(platform);
+        const response = await axios.get('https://api.rawg.io/api/games', {
+          params: { key: apiKey, search: searchTerm, page_size: 40 },
+        });
+        const data = response.data;
+        console.log("🧩 RAWG results count:", data.results?.length);
+
+        const filtered = data.results.filter((game) => {
+          if (!game.tags) return true;
+          const tags = game.tags.map((t) => t.slug.toLowerCase());
+          const blocked = [
+            'nsfw', 'adult', 'sexual-content', 'nudity',
+            'hentai', 'erotic', 'mature', 'porn', 'sex',
+            '18-plus', 'explicit'
+          ];
+          return !tags.some((t) => blocked.includes(t));
+        });
+
+        console.log("✅ Filtered RAWG games:", filtered.length);
+        setResults(filtered || []);
+        setMoreGamesDisplay(!!data.next);
       } catch (err) {
-        console.error("❌ Failed to post platform:", platform, err);
+        console.error('❌ Search failed (RAWG):', err);
+      } finally {
+        setLoading(false);
       }
+    } else {
+      console.log("📘 Searching GameReview games from local DB...");
+      console.log("Current games count:", games.length);
+      const filtered = games.filter((g) =>
+        g.title.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      console.log("🎮 GameReview filtered count:", filtered.length);
+      if (filtered.length > 0) {
+        console.log("🎮 Sample GameReview game:", filtered[0]);
+      } else {
+        console.warn("⚠️ No matching GameReview games found.");
+      }
+      setResults(filtered);
+      setLoading(false);
     }
   };
 
-
-
-
-
-  const createUserGame = async (newUserGame) => {
-
-    await postUserGameToDatabase(newUserGame);
-
-    setUserGames(prevUserGames => [...prevUserGames, newUserGame]);
-
-  }
-
-  const createGame = async (newGame) => {
-
-    await postGameToDatabase(newGame);
-
-    setGames([...games, newGame]);
-
-  }
-
-  const checkIfUserGameExistsByRawGId = (rawGId) => {
-
-    const game = games.find(g => g.rawGId === rawGId)
-    if (!game)
-      return false;
-    const usergame = usergames.find(u => u.game_id === game.id && user.id === u.user_id)
-    if (usergame)
-      return true;
-    return false;
-  }
-
-  const checkIfUserGameExistsByGameReviewId = (gameReviewId) => {
-    const game = games.find(g => g.id === gameReviewId)
-    if (!game)
-      return false;
-    const usergame = usergames.find(u => u.game_id === game.id && user.id === u.user_id)
-    if (usergame)
-      return true;
-    return false;
-  }
-
-  const checkIfGameExistByRawGId = (rawGId) => {
-    const game = games.find(g => g.rawGId === rawGId);
-    if (game)
-      return game;
-    return null;
-  }
-
-  const createGameGenres = async (rawGArrayOfGenres, gameId) => {
-    const newGenres = rawGArrayOfGenres
-      .filter(genre => {
-        const genreId = getGenre_id(genre.id);
-        return !gamegenres.find(g => g.genre_id === genreId && g.game_id === gameId);
-      })
-      .map(genre => ({
-        game_id: gameId,
-        id: getNewGameGenreId(),
-        genre_id: getGenre_id(genre.id),
-      }));
-
-    if (newGenres.length === 0) return; // Skip if there's nothing new
-
-    setGameGenres([...gamegenres, ...newGenres]);
-    for (const genre of newGenres) {
-      await postGameGenreToDatabase(genre);
+  const normalizeReleaseDate = (date) => {
+    if (!date) return null;
+    if (Array.isArray(date)) {
+      const [year, month, day] = date;
+      return new Date(year, month - 1, day).toISOString().split("T")[0];
     }
+    return typeof date === "string" ? date : null;
   };
 
-const handleSort = (sorting) => {
-  setActiveSort(sorting.title);
 
-  const key = sorting.key; // the property to sort by, e.g., 'reviewedCount'
+  // 🔽 Sort handler
+  const handleSort = (sorting) => {
+    setActiveSort(sorting.title);
+    const key = sorting.key;
+    const sorted = [...results].sort((a, b) => {
+      if (typeof a[key] === 'number' && typeof b[key] === 'number') return b[key] - a[key];
+      if (typeof a[key] === 'string' && typeof b[key] === 'string') return b[key].localeCompare(a[key]);
+      return 0;
+    });
+    setResults(sorted);
+  };
 
-  const sortedResults = [...results].sort((a, b) => {
-    // Descending order (b - a)
-    if (typeof a[key] === 'number' && typeof b[key] === 'number') {
-      return b[key] - a[key];
-    }
-    // Fallback for strings
-    if (typeof a[key] === 'string' && typeof b[key] === 'string') {
-      return b[key].localeCompare(a[key]);
-    }
-    return 0;
-  });
-
-  setResults(sortedResults); // update state with sorted results
-};
-
-  if (activeSearch === "rawG")
-    return (
-      <>
-        {addGamePressed && (
-          <div style={{
-            position: 'fixed',
-            top: 0, left: 0,
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: 'rgba(255,255,255,0.8)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999,
-          }}>
-
-            <div>
-              <p>Adding game, please wait...</p>
-              {/* You can replace with a spinner if you want */}
-            </div>
-          </div>
-
-        )}
-
-        <div style={{ padding: '2rem' }}>
-          <button class="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
-          <h2>Add a Game</h2>
-
-          {moreGamesToDisplay && (
-            <div style={{ marginTop: '1.5rem', marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0f8ff', borderLeft: '4px solid #ff0000ff', borderRadius: '4px' }}>
-              <strong style={{ color: '#ff0000ff', fontSize: '1.1rem' }}>
-                More games found. Search more narrow for a better suiting list.
-              </strong>
-            </div>
-          )}<button
-            className={activeSearch === 'rawG' ? 'active' : 'inactive'}
-            onClick={() => setActiveSearch('rawG')}>
-            RawG Games
-          </button>
-
-          <button
-            className={activeSearch === 'gameReview' ? 'active' : 'inactive'}
-            onClick={() => {
-              setActiveSearch('gameReview');
-              setResults(games);
-              setSearchTerm('');
-            }}>
-            GameReview Games
-          </button>
-
-          <div>
-            <input
-              type="text"
-              placeholder="Search for a game..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ width: '60%', padding: '0.5rem' }}
-            />
-            <button class="button" onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
-              {loading ? 'Searching...' : 'Search'}
-            </button>
-          </div>
-          <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
-            {results.map((game) => (
-              <li
-                key={game.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  marginBottom: '1rem',
-                  padding: '0.5rem',
-                  border: '1px solid #ddd',
-                  borderRadius: '4px',
-                }}
-              >
-                <img
-                  src={game.background_image}
-                  alt={game.name}
-                  style={{ width: 60, height: 60, objectFit: 'cover', marginRight: '1rem' }}
-                />
-                <div style={{ flexGrow: 1 }}>
-                  <strong>{game.name}</strong>
-                  <div>{game.released}</div>
-                </div>
-                <button
-                class="button"
-                  onClick={async () => {
-
-                    const checkUserGameExist = checkIfUserGameExistsByRawGId(game.id);
-                    if (checkUserGameExist) {
-                      window.alert(`Game ${game.name} already exists in your list`);
-                      return;
-                    }
-                    setAddGamePressed(true);
-
-                    let gameObject = checkIfGameExistByRawGId(game.id);
-                    let createGenreAndPlatforms = gameObject ? false : true;
-
-                    if (!gameObject) {
-                      gameObject = {
-                        title: game.name,
-                        coverImageUrl: game.background_image,
-                        releaseDate: game.released,
-                        rawGId: game.id,
-                      };
-                      await createGame(gameObject);
-                      setGames([...games, gameObject]);
-                    }
-
-
-
-                    const newUserGame = {
-                      rating: undefined,
-                      reviewed: false,
-                      reviewText: "",
-                      status: "NotStarted",
-                      game_id: gameObject.id,
-                      user_id: user.id
-                    }
-                    await createUserGame(newUserGame);
-
-                    if (createGenreAndPlatforms) {
-                      await createGamePlatforms(game.platforms, newUserGame.game_id);
-                      await createGameGenres(game.genres, newUserGame.game_id)
-                      setGamePlatformsNeedRefresh(true);
-                    }
-
-
-                    navigate('/gamelistpage'); // 👈 Navigate after adding
-                  }}
-                >
-                  Add
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </>
-    );
-
-  else {
-
-
-
+  // ✅ UI for RAWG Games
+  if (activeSearch === 'rawG') {
     return (
       <div style={{ padding: '2rem' }}>
-        <button class="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
+        {addGamePressed && (
+          <div className="loading-overlay">
+            <p>Adding game, please wait...</p>
+          </div>
+        )}
+
+        <button className="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
         <h2>Add a Game</h2>
 
         {moreGamesToDisplay && (
-          <div style={{ marginTop: '1.5rem', marginBottom: '1rem', padding: '1rem', backgroundColor: '#f0f8ff', borderLeft: '4px solid #ff0000ff', borderRadius: '4px' }}>
-            <strong style={{ color: '#ff0000ff', fontSize: '1.1rem' }}>
-              More games found. Search more narrow for a better suiting list.
-            </strong>
+          <div className="warning-box">
+            <strong>More games found. Search more narrowly for better results.</strong>
           </div>
-        )}<button
-          className={activeSearch === 'rawG' ? 'active' : 'inactive'}
-          onClick={() => {
-            setActiveSearch('rawG');
-            setResults([]);
-            setSearchTerm('');
-          }}>
-          RawG Games
-        </button>
+        )}
 
         <button
-          className={activeSearch === 'gameReview' ? 'active' : 'inactive'}
-          onClick={() => setActiveSearch('gameReview')}>
-          GameReview Games
-        </button>
-        <div className="sort-buttons">
-          {sortingOptions.map(sorting => (
-            <button
-              key={sorting.title}
-              className={activeSort === sorting.title ? 'active' : 'inactive'}
-              onClick={() => handleSort(sorting)}
-            >
-              {sorting.title}
-            </button>
-          ))}
-        </div>
-        <div>
+          className={activeSearch === 'rawG' ? 'active' : ''}
+          onClick={() => setActiveSearch('rawG')}
+        >RawG Games</button>
+
+        <button
+          className={activeSearch === 'gameReview' ? 'active' : ''}
+          onClick={() => {
+            setActiveSearch('gameReview');
+            setResults(games);
+            setSearchTerm('');
+          }}
+        >GameReview Games</button>
+
+        <div style={{ marginTop: '1rem' }}>
           <input
             type="text"
             placeholder="Search for a game..."
@@ -498,54 +261,94 @@ const handleSort = (sorting) => {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{ width: '60%', padding: '0.5rem' }}
           />
-          <button class="button" onClick={handleSearch} disabled={loading} style={{ marginLeft: '0.5rem' }}>
+          <button className="button" onClick={handleSearch} disabled={loading}>
             {loading ? 'Searching...' : 'Search'}
           </button>
         </div>
+
         <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
           {results.map((game) => (
-            <li
-              key={game.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                marginBottom: '1rem',
-                padding: '0.5rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-              }}
-            >
-              <img
-                src={game.coverImageUrl}
-                alt={game.title}
-                style={{ width: 60, height: 60, objectFit: 'cover', marginRight: '1rem' }}
-              />
-              <div style={{ flexGrow: 1 }}>
-                <strong>{game.title}</strong>
-                <div>{game.releaseDate}</div>
-                <div>People has the game: {game.userGameCount}</div>
-                <div>People has reviewed the game: {game.reviewedCount}</div>
+            <li key={game.id} className="game-result-item">
+              <img src={game.background_image} alt={game.name} className="game-thumb" />
+              <div className="game-info">
+                <strong>{game.name}</strong>
+                <div>
+                  {game.released
+                    ? new Date(game.released).toLocaleDateString("no-NO")
+                    : "Not available"}
+                </div>
               </div>
               <button
-              class="button"
+                className="button"
                 onClick={async () => {
-                  const checkUserGameExist = checkIfUserGameExistsByGameReviewId(game.id);
-                  if (checkUserGameExist) {
-                    window.alert(`Game ${game.title} already exists in your list`);
+                  if (checkIfUserGameExists(game)) {
+                    window.alert(`Game ${game.name || game.title} already exists in your list`);
                     return;
                   }
 
-                  const newUserGame = {
-                    rating: undefined,
-                    reviewed: false,
-                    reviewText: "",
-                    status: "NotStarted",
-                    game_id: game.id,
-                    user_id: user.id
+                  setAddGamePressed(true);
+
+                  try {
+                    // 🧩 Step 1: Find or create the base game
+                    let gameObject = games.find(
+                      (g) => g.rawGId === game.rawGId || g.id === game.id
+                    );
+
+                    const createGenreAndPlatforms = !gameObject;
+
+                    if (!gameObject) {
+                      const newGame = {
+                        title: game.name || game.title,
+                        coverImageUrl: game.background_image || game.coverImageUrl,
+                        releaseDate: normalizeReleaseDate(game.released || game.releaseDate),
+                        rawGId: game.rawGId || (activeSearch === "rawG" ? game.id : null),
+                      };
+
+                      gameObject = await createGame(newGame);
+                    }
+
+                    // 🧩 Step 2: Create the user-game link
+                    const newUserGame = {
+                      rating: undefined,
+                      reviewed: false,
+                      reviewText: "",
+                      status: "NotStarted",
+                      game_id: gameObject.id,
+                      user_id: user.id,
+                    };
+                    await postUserGameToDatabase(newUserGame);
+
+                    // 🧩 Step 3: Create game genres & platforms if needed
+                    if (createGenreAndPlatforms && game.platforms && game.genres) {
+                      await createGamePlatforms(game.platforms, gameObject.id);
+                      await createGameGenres(game.genres, gameObject.id);
+                      setGamePlatformsNeedRefresh(true);
+                    }
+
+                    // 🧩 Step 4: Refetch everything so new data shows immediately
+                    const [updatedGamesResponse, updatedUserGamesResponse, gpResponse, ggResponse] =
+                      await Promise.all([
+                        axios.get(`${BASE_URL}/Game`),
+                        axios.get(`${BASE_URL}/UserGame`),
+                        axios.get(`${BASE_URL}/GamePlatform`),
+                        axios.get(`${BASE_URL}/GameGenre`),
+                      ]);
+
+                    setGames(updatedGamesResponse.data);
+                    setUserGames(updatedUserGamesResponse.data);
+                    setGamePlatforms(gpResponse.data);
+                    setGameGenres(ggResponse.data);
+
+                    // ✅ Navigate to gamelist (with updated data)
+                    navigate("/gamelistpage");
+                  } catch (err) {
+                    console.error("❌ Failed to add game:", err);
+                    window.alert("Failed to add game. Please try again.");
+                  } finally {
+                    setAddGamePressed(false);
                   }
-                  await createUserGame(newUserGame);
-                  navigate('/gamelistpage'); // 👈 Navigate after adding
                 }}
+
               >
                 Add
               </button>
@@ -553,10 +356,167 @@ const handleSort = (sorting) => {
           ))}
         </ul>
       </div>
-    )
-
+    );
   }
 
+  // ✅ UI for GameReview Games
+  return (
+    <div style={{ padding: '2rem' }}>
+      <button className="button" onClick={() => navigate('/gamelistpage')}>← Back</button>
+      <h2>Add a Game</h2>
+
+      <button
+        className={activeSearch === 'rawG' ? 'active' : ''}
+        onClick={() => {
+          setActiveSearch('rawG');
+          setResults([]);
+          setSearchTerm('');
+        }}
+      >RawG Games</button>
+
+      <button
+        className={activeSearch === 'gameReview' ? 'active' : ''}
+        onClick={() => setActiveSearch('gameReview')}
+      >GameReview Games</button>
+
+      <div className="sort-buttons">
+        {sortingOptions.map((sorting) => (
+          <button
+            key={sorting.title}
+            className={activeSort === sorting.title ? 'active' : ''}
+            onClick={() => handleSort(sorting)}
+          >
+            {sorting.title}
+          </button>
+        ))}
+      </div>
+
+      <div>
+        <input
+          type="text"
+          placeholder="Search for a game..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          style={{ width: '60%', padding: '0.5rem' }}
+        />
+        <button className="button" onClick={handleSearch} disabled={loading}>
+          {loading ? 'Searching...' : 'Search'}
+        </button>
+      </div>
+
+      <ul style={{ listStyle: 'none', padding: 0, marginTop: '1rem' }}>
+        {results.map((game) => (
+          <li key={game.id} className="game-result-item">
+            <img src={game.coverImageUrl} alt={game.title} className="game-thumb" />
+            <div className="game-info">
+              <strong>{game.title}</strong>
+              <div>
+                Release Date:{" "}
+                {game.releaseDate
+                  ? new Date(game.releaseDate).toLocaleDateString("no-NO")
+                  : "Not available"}
+              </div>
+              <div>#Users: {game.userGameCount}</div>
+              <div>#Reviews: {game.reviewedCount}</div>
+              <div>
+                Review Score:{" "}
+                {game.averageReviewScore
+                  ? `${game.averageReviewScore.toFixed(1)} / 5.0`
+                  : "Not reviewed"}
+              </div>
+            </div>
+
+            <div className="game-actions">
+              <button
+                className="button"
+                onClick={async () => {
+                  if (checkIfUserGameExists(game)) {
+                    window.alert(`Game ${game.name || game.title} already exists in your list`);
+                    return;
+                  }
+
+                  setAddGamePressed(true);
+
+                  try {
+                    // 🧩 Step 1: Find or create the base game
+                    let gameObject = games.find(
+                      (g) => g.rawGId === game.rawGId || g.id === game.id
+                    );
+
+                    const createGenreAndPlatforms = !gameObject;
+
+                    if (!gameObject) {
+                      const newGame = {
+                        title: game.name || game.title,
+                        coverImageUrl: game.background_image || game.coverImageUrl,
+                        releaseDate: normalizeReleaseDate(game.released || game.releaseDate),
+                        rawGId: game.rawGId || (activeSearch === "rawG" ? game.id : null),
+                      };
+
+                      gameObject = await createGame(newGame);
+                    }
+
+                    // 🧩 Step 2: Create the user-game link
+                    const newUserGame = {
+                      rating: undefined,
+                      reviewed: false,
+                      reviewText: "",
+                      status: "NotStarted",
+                      game_id: gameObject.id,
+                      user_id: user.id,
+                    };
+                    await postUserGameToDatabase(newUserGame);
+
+                    // 🧩 Step 3: Create game genres & platforms if needed
+                    if (createGenreAndPlatforms && game.platforms && game.genres) {
+                      await createGamePlatforms(game.platforms, gameObject.id);
+                      await createGameGenres(game.genres, gameObject.id);
+                      setGamePlatformsNeedRefresh(true);
+                    }
+
+                    // 🧩 Step 4: Refetch everything so new data shows immediately
+                    const [updatedGamesResponse, updatedUserGamesResponse, gpResponse, ggResponse] =
+                      await Promise.all([
+                        axios.get(`${BASE_URL}/Game`),
+                        axios.get(`${BASE_URL}/UserGame`),
+                        axios.get(`${BASE_URL}/GamePlatform`),
+                        axios.get(`${BASE_URL}/GameGenre`),
+                      ]);
+
+                    setGames(updatedGamesResponse.data);
+                    setUserGames(updatedUserGamesResponse.data);
+                    setGamePlatforms(gpResponse.data);
+                    setGameGenres(ggResponse.data);
+
+                    // ✅ Navigate to gamelist (with updated data)
+                    navigate("/gamelistpage");
+                  } catch (err) {
+                    console.error("❌ Failed to add game:", err);
+                    window.alert("Failed to add game. Please try again.");
+                  } finally {
+                    setAddGamePressed(false);
+                  }
+                }}
+              >
+                Add
+              </button>
+
+              <button
+                className="button"
+                onClick={() =>
+                  navigate(`/reviews/${game.id}`, {
+                    state: { game, fromGameReview: true },
+                  })
+                }
+              >
+                View Reviews
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
 
 export default AddGamePage;
