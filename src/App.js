@@ -33,7 +33,6 @@ import { getGamePlatforms } from './api/gamePlatformApi';
 import { getGenres, getGenresFromRawG, postRawGGenresToDatabase } from './api/genreApi';
 import { getPlatforms, getPlatformsFromRawG, postRawGPlatformsToDatabase } from './api/platformApi';
 import { useEffect, useState, useRef } from 'react';
-import { Helmet } from "react-helmet";
 import { Link } from 'react-router-dom';
 import gameReviewLogo from "./images/gameReviewLogo.png";
 
@@ -71,29 +70,44 @@ export const fetchGame = async (setGames, games, game_id) => {
   }
 };
 
-export const fetchGameGenres = async (userGames, setGameGenres) => {
-  try {
 
+
+export const fetchGameGenres = async (userGames, setGameGenres, currentGameGenres = []) => {
+  try {
     const gameGenresList = await Promise.all(
       userGames.map(userGame => getGameGenres(userGame.game_id))
     );
-    setGameGenres(gameGenresList.flat());
+
+    const flatList = gameGenresList.flat();
+
+    // ✅ Combine with existing and deduplicate
+    const all = [...currentGameGenres, ...flatList];
+    const unique = Array.from(new Map(all.map(g => [g.id, g])).values());
+
+    setGameGenres(unique);
   } catch (error) {
-    console.error('Failed to fetch GameGenres from rawG:', error);
+    console.error('Failed to fetch GameGenres:', error);
   }
 };
 
-export const fetchGamePlatforms = async (userGames, setGamePlatforms) => {
+export const fetchGamePlatforms = async (userGames, setGamePlatforms, currentGamePlatforms = []) => {
   try {
-
     const gamePlatformsList = await Promise.all(
-      userGames.map(usergame => getGamePlatforms(usergame.game_id))
+      userGames.map(userGame => getGamePlatforms(userGame.game_id))
     );
-    setGamePlatforms(gamePlatformsList.flat());
+
+    const flatList = gamePlatformsList.flat();
+
+    // ✅ Combine with existing and deduplicate
+    const all = [...currentGamePlatforms, ...flatList];
+    const unique = Array.from(new Map(all.map(p => [p.id, p])).values());
+
+    setGamePlatforms(unique);
   } catch (error) {
     console.error('Failed to fetch GamePlatforms:', error);
   }
 };
+
 
 function LoginPage() {
   const [username, setUsername] = useState('');
@@ -124,7 +138,7 @@ function LoginPage() {
 
 
 
-  
+
 
   const handleLogin = async (e) => {
 
@@ -246,8 +260,10 @@ function LoginPage() {
       padding: '0.75rem 1rem',
       marginBottom: '1rem',
       fontSize: '1rem',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#ccc',
       borderRadius: '4px',
-      border: '1px solid #ccc',
       outline: 'none',
       transition: 'border-color 0.3s',
     },
@@ -360,10 +376,6 @@ function LoginPage() {
 function App() {
   return (
     <>
-      <Helmet>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-      </Helmet>
-
       <GamePlatformProvider>
         <PlatformProvider>
           <GameGenreProvider>
