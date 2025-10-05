@@ -3,11 +3,16 @@ import { BASE_URL } from '../model/generalData';
 
 // replace with actual URL
 
-export const getUserGames = async (id) => {
+export const getUserGamesByUserId = async (id) => {
   const response = await axios.get(`${BASE_URL}/UserGame?userId=` + id);
   return response.data;
 };
 
+
+export const getUserGamesByGameId = async (id) => {
+  const response = await axios.get(`${BASE_URL}/UserGame?gameId=` + id);
+  return response.data;
+};
 
 export const deleteUserGameFromDatabase = async (id) => {
   try {
@@ -59,3 +64,9 @@ export const putUserGameReview = async (id, updatedUserGame) => {
   }
 };
 
+export const deleteUserGameReview = async (userGameId, userId) => {
+  const res = await axios.delete(`${BASE_URL}/UserGame/${userGameId}/review`, {
+    params: { userId },
+  });
+  return res.data;
+};

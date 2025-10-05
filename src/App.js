@@ -5,6 +5,7 @@ import React from 'react';
 import { FaSpinner } from 'react-icons/fa';
 import GameListPage from './pages/gamelistpage';
 import ReviewPage from './pages/reviewpage';
+import AdminPage from './pages/AdminPage';
 import ViewReviewPage from './pages/viewReviewPage';
 import AddGamePage from './pages/addGamePage';
 import AchivevementPage from './pages/achievementPage';
@@ -25,7 +26,7 @@ import { GameGenreProvider } from './context/GameGenreContext';
 import { AchievementProvider } from './context/AchievementContext';
 import { GamePlatformProvider } from './context/GamePlatformContext';
 import { loginToSite } from './api/usersApi';
-import { getUserGames } from './api/userGamesApi';
+import { getUserGamesByUserId } from './api/userGamesApi';
 import { getGames } from './api/gameApi';
 import { getGame } from './api/gameApi';
 import { getGameGenres } from './api/gameGenresApi';
@@ -38,7 +39,7 @@ import gameReviewLogo from "./images/gameReviewLogo.png";
 
 export const fetchUserGames = async (id, setUserGames) => {
   try {
-    const userGames = await getUserGames(id);
+    const userGames = await getUserGamesByUserId(id);
     await setUserGames(userGames);
     return userGames;
   } catch (error) {
@@ -46,6 +47,7 @@ export const fetchUserGames = async (id, setUserGames) => {
   }
   return [];
 };
+
 export const fetchGames = async (setGames) => {
   try {
     const Games = await getGames();
@@ -393,6 +395,7 @@ function App() {
                           <Route path="/achievementpage" element={<AchivevementPage />} />
                           <Route path="/createuserpage" element={<CreateUserPage />} />
                           <Route path="/reviews/:gameId" element={<ViewReviewPage />} />
+                          <Route path="/adminpage" element={<AdminPage />} />
                         </Routes>
                       </Router>
                     </GameProvider>

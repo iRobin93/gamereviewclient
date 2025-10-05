@@ -44,3 +44,14 @@ export const loginToSite = async (userInfo) => {
     };
   }
 };
+
+// ✅ Update user role (admin / normal)
+export async function updateUserRole(userId, isAdmin) {
+  try {
+    const response = await axios.put(`${BASE_URL}/User/${userId}/role`, { isAdmin });
+    return response.data;
+  } catch (error) {
+    console.error('❌ Error updating user role:', error);
+    throw error;
+  }
+}

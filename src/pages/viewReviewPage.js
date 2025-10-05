@@ -1,35 +1,40 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { BASE_URL } from "../model/generalData.js";
-import axios from "axios";
 import "../css/viewReviewPage.css";
 import { useGenres } from "../context/GenreContext";
 import { usePlatforms } from "../context/PlatformContext";
 import { useGameGenres } from "../context/GameGenreContext";
 import { useGamePlatforms } from "../context/GamePlatformContext";
+import { useUser } from "../context/UserContext";
+import { useUserGames } from "../context/UserGameContext.js";
+import { putUserGameToDatabase } from "../api/userGamesApi.js";
+import { getUserGamesByGameId } from "../api/userGamesApi.js"
+import { useGames } from '../context/GameContext';
 
 export default function ViewReviewPage() {
     const { gameId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-
+    const { user } = useUser();
     const { gamegenres } = useGameGenres();
     const { gameplatforms } = useGamePlatforms();
     const { genres } = useGenres();
     const { platforms } = usePlatforms();
-
+    const { setGamesNeedRefresh} = useGames();
     const game = location.state?.game;
     const fromGameReview = location.state?.fromGameReview || false;
 
-    const [reviews, setReviews] = useState([]);
+    const {setUserGames } = useUserGames();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [reviewUsergames, setReviewUserGames] = useState([]);
 
+    // ✅ Fetch reviews
     useEffect(() => {
         const fetchReviews = async () => {
             try {
-                const response = await axios.get(`${BASE_URL}/UserGame/Game/${gameId}`);
-                setReviews(response.data);
+                const responseData = await getUserGamesByGameId(gameId);
+                setReviewUserGames(responseData);
             } catch (err) {
                 console.error("Error fetching reviews:", err);
                 setError("Could not fetch reviews 😞");
@@ -40,24 +45,42 @@ export default function ViewReviewPage() {
         fetchReviews();
     }, [gameId]);
 
+    // ✅ Delete review (admin only)
+    // ✅ "Clear" review (admin only)
+    const handleDeleteReview = async (userGame) => {
+        if (!window.confirm("Are you sure you want to remove this review text?")) return;
+
+        try {
+            setUserGames((prev) =>
+                prev.map((r) => (r.id === userGame.id ? { ...r, reviewText: null, rating: null, reviewed: false } : r))
+            );
+            setReviewUserGames((prev) =>
+                prev.filter((r) => r.id !== userGame.id)
+            );
+            setGamesNeedRefresh(true);
+            userGame.reviewed = false;
+            userGame.reviewText = null;
+            userGame.rating = null;
+            await putUserGameToDatabase(userGame.id, userGame);
+        } catch (err) {
+            console.error("Error clearing review:", err);
+            alert("Failed to clear review ❌");
+        }
+    };
+
+
     const getGameGenres = (gameId) => {
-        const genreLinks = gamegenres.filter((g) => g.game_id === gameId);
+        const genreLinks = gamegenres?.filter((g) => g.game_id === gameId) || [];
         const genreNames = genreLinks
-            .map((link) => {
-                const genre = genres.find((g) => g.id === link.genre_id);
-                return genre ? genre.genreName : null;
-            })
+            .map((link) => genres?.find((g) => g.id === link.genre_id)?.genreName || null)
             .filter(Boolean);
         return genreNames.join(", ");
     };
 
     const getGamePlatforms = (gameId) => {
-        const platformLinks = gameplatforms.filter((p) => p.game_id === gameId);
+        const platformLinks = gameplatforms?.filter((p) => p.game_id === gameId) || [];
         const platformNames = platformLinks
-            .map((link) => {
-                const platform = platforms.find((p) => p.id === link.platform_id);
-                return platform ? platform.platformName : null;
-            })
+            .map((link) => platforms?.find((p) => p.id === link.platform_id)?.platformName || null)
             .filter(Boolean);
         return platformNames.join(", ");
     };
@@ -92,7 +115,6 @@ export default function ViewReviewPage() {
                     <div className="game-info">
                         <h2>🎮 {game.title}</h2>
 
-                        {/* Hide status if coming from GameReviewGames */}
                         {!fromGameReview && (
                             <p>
                                 <strong>Status:</strong> {renderStatusIcon(game.status)}
@@ -109,10 +131,10 @@ export default function ViewReviewPage() {
                             <strong>Release Date:</strong>{" "}
                             {game.releaseDate
                                 ? new Date(game.releaseDate).toLocaleDateString("en-GB", {
-                                      day: "2-digit",
-                                      month: "2-digit",
-                                      year: "numeric",
-                                  })
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                })
                                 : "N/A"}
                         </p>
 
@@ -132,11 +154,11 @@ export default function ViewReviewPage() {
             )}
 
             <h3>📝 Reviews</h3>
-            {reviews.length === 0 ? (
+            {reviewUsergames.length === 0 ? (
                 <p>No reviews found for this game.</p>
             ) : (
                 <div className="reviews-list">
-                    {reviews.map((review) => (
+                    {reviewUsergames.map((review) => (
                         <div key={review.id} className="review-card">
                             <h4>{review.username || "Anonymous"}</h4>
                             <p>
@@ -152,6 +174,16 @@ export default function ViewReviewPage() {
                                 <p className="review-date">
                                     {new Date(review.reviewedDate).toLocaleDateString("en-GB")}
                                 </p>
+                            )}
+
+                            {/* ✅ Only show delete if user is admin */}
+                            {(review.user_id === user.id) && (
+                                <button
+                                    className="delete-review-button"
+                                    onClick={() => handleDeleteReview(review)}
+                                >
+                                    🗑️ Delete
+                                </button>
                             )}
                         </div>
                     ))}

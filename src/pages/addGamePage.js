@@ -49,7 +49,7 @@ function AddGamePage() {
     return savedGame;
   };
 
-  // ✅ NEW: Unified check (works for both RawG and GameReview games)
+
   const checkIfUserGameExists = (game) => {
     if (!game || !games?.length || !usergames?.length || !user?.id) return false;
 
@@ -58,6 +58,25 @@ function AddGamePage() {
       game.rawGId
         ? g.rawGId === game.rawGId
         : g.id === game.id
+    );
+
+    if (!existingGame) return false;
+
+    // Check if the current user already has a link to this game
+    return usergames.some(
+      (u) => u.game_id === existingGame.id && u.user_id === user.id
+    );
+  };
+
+
+
+  const checkIfUserGameExistsFromRawG = (rawGgame) => {
+    if (!rawGgame || !games?.length || !usergames?.length || !user?.id) return false;
+
+    // Try matching by rawGId first, fallback to internal id
+    const existingGame = games.find((g) =>
+      g.rawGId === rawGgame.id
+
     );
 
     if (!existingGame) return false;
@@ -281,7 +300,7 @@ function AddGamePage() {
               <button
                 className="button"
                 onClick={async () => {
-                  if (checkIfUserGameExists(game)) {
+                  if (checkIfUserGameExistsFromRawG(game)) {
                     window.alert(`Game ${game.name || game.title} already exists in your list`);
                     return;
                   }
@@ -317,27 +336,18 @@ function AddGamePage() {
                       user_id: user.id,
                     };
                     await postUserGameToDatabase(newUserGame);
+                    setUserGames([...usergames, newUserGame]);
+
 
                     // 🧩 Step 3: Create game genres & platforms if needed
                     if (createGenreAndPlatforms && game.platforms && game.genres) {
                       await createGamePlatforms(game.platforms, gameObject.id);
                       await createGameGenres(game.genres, gameObject.id);
-                      setGamePlatformsNeedRefresh(true);
+                      //setGamePlatformsNeedRefresh(true);
                     }
 
                     // 🧩 Step 4: Refetch everything so new data shows immediately
-                    const [updatedGamesResponse, updatedUserGamesResponse, gpResponse, ggResponse] =
-                      await Promise.all([
-                        axios.get(`${BASE_URL}/Game`),
-                        axios.get(`${BASE_URL}/UserGame`),
-                        axios.get(`${BASE_URL}/GamePlatform`),
-                        axios.get(`${BASE_URL}/GameGenre`),
-                      ]);
 
-                    setGames(updatedGamesResponse.data);
-                    setUserGames(updatedUserGamesResponse.data);
-                    setGamePlatforms(gpResponse.data);
-                    setGameGenres(ggResponse.data);
 
                     // ✅ Navigate to gamelist (with updated data)
                     navigate("/gamelistpage");

@@ -13,6 +13,7 @@ import { usePlatforms } from '../context/PlatformContext'
 import { deleteUserGameFromDatabase } from '../api/userGamesApi'
 import { putUserGameToDatabase } from '../api/userGamesApi'
 import { fetchGames } from '../App'
+import AdminButton from '../buttons/AdminButton.js';
 
 function GameListPage() {
   const { user, setUser } = useUser();
@@ -50,18 +51,19 @@ function GameListPage() {
   }, [usergamesNeedRefresh, setUsergamesNeedRefresh, setUserGames, user]);
 
 
-  useEffect(() => {
-    if (!gamesNeedRefresh) return;
-    console.log('games refreshed')
-    const refreshUserGames = async () => {
-      const updatedGames = await fetchGames(setGames);
-      setGames(updatedGames);
+useEffect(() => {
+  const shouldFetch = gamesNeedRefresh || games.length === 0;
+  if (!shouldFetch) return;
 
-      setGamesNeedRefresh(false);
-    };
+  console.log('Fetching games...');
 
-    refreshUserGames();
-  }, [gamesNeedRefresh, setGamesNeedRefresh, setGames, games]);
+  const refreshGames = async () => {
+    await fetchGames(setGames);
+    setGamesNeedRefresh(false);
+  };
+
+  refreshGames();
+}, [gamesNeedRefresh, games.length, setGames, setGamesNeedRefresh]);
 
   useEffect(() => {
     if (!gamePlatformsNeedRefresh) return;
@@ -318,6 +320,7 @@ const handleViewReviews = (game) => {
         <button onClick={() => setShowOnlyFavorites((prev) => !prev)}>
           {showOnlyFavorites ? "Show All Games" : "Show Favorites Only"}
         </button>
+        <AdminButton user={user} />
         <button className="add-game-button button" onClick={handleAddGame}>
           ➕ Add Game
         </button>
@@ -496,7 +499,7 @@ const handleViewReviews = (game) => {
 
             {/* --- ACTION BUTTONS --- */}
             <div className="game-actions">
-              {!mergedGame_UserGame.reviewed && (
+              {
                 <button
                   className="button"
                   onClick={() =>
@@ -505,7 +508,7 @@ const handleViewReviews = (game) => {
                 >
                   Review
                 </button>
-              )}
+              }
 
               <button
                 className="button"

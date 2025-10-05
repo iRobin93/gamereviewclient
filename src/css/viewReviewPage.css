@@ -118,3 +118,20 @@
   color: #ccc;
   margin-left: 5px;
 }
+
+
+.delete-review-button {
+  background-color: #c0392b;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-top: 6px;
+  transition: 0.2s;
+}
+
+.delete-review-button:hover {
+  background-color: #e74c3c;
+}

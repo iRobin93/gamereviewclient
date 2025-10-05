@@ -1,0 +1,101 @@
+.admin-container {
+  max-width: 900px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: #121212;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  color: #eaeaea;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.admin-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #f2f2f2;
+}
+
+.admin-username {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.back-btn {
+  margin-top: 1rem;
+  background: #444;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.back-btn:hover {
+  background: #666;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 12px 10px;
+  border: 1px solid #333;
+  text-align: center;
+}
+
+.admin-table th {
+  background: #1e1e1e;
+  color: #ccc;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+}
+
+.admin-table tr:nth-child(even) {
+  background: #1b1b1b;
+}
+
+.role-btn {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.2s;
+}
+
+.role-btn:hover {
+  transform: scale(1.05);
+}
+
+.role-btn.promote {
+  background: #28a745;
+}
+.role-btn.promote:hover {
+  background: #34c759;
+}
+
+.role-btn.demote {
+  background: #d33;
+}
+.role-btn.demote:hover {
+  background: #ff4d4d;
+}
+
+.access-denied {
+  padding: 3rem;
+  color: red;
+  text-align: center;
+  font-size: 1.2rem;
+}
