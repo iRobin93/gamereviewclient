@@ -29,6 +29,15 @@
   transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
+
+.sort-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+
 .button:hover {
   background-color: #0056b3;
   transform: scale(1.03);
@@ -70,23 +79,49 @@
 /* === SEARCH BAR === */
 .search-bar {
   display: flex;
-  gap: 0.5rem;
   justify-content: center;
-  margin-bottom: 1.2rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 700px;
 }
 
 .search-bar input {
-  width: 60%;
-  padding: 0.7rem;
+  flex: 1;
+  padding: 0.8rem 1rem;
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 1rem;
+  text-align: center;
 }
 
 .search-bar input:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.search-bar button {
+  flex-shrink: 0;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.search-bar button:hover {
+  background-color: #0056b3;
 }
 
 /* === WARNING BOX === */
@@ -105,6 +140,9 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 /* === GAME ITEM === */
@@ -148,10 +186,12 @@
 .game-actions {
   display: flex;
   justify-content: space-between;
-  gap: 0.5rem;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap; /* ensures buttons wrap gracefully on small screens */
 }
 
-/* === LOADING === */
+/* === LOADING OVERLAY === */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -168,13 +208,18 @@
 }
 
 /* === RESPONSIVE === */
-@media (max-width: 600px) {
-  .search-bar {
+@media (max-width: 700px) {
+  .search-bar form {
     flex-direction: column;
-    align-items: center;
+    max-width: 90%;
   }
 
   .search-bar input {
+    width: 100%;
+    text-align: left;
+  }
+
+  .search-bar button {
     width: 100%;
   }
 
@@ -185,11 +230,4 @@
   .button {
     width: 100%;
   }
-}
-
-ul.game-list,
-ul.game-list li {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
 }

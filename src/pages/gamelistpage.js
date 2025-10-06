@@ -482,7 +482,7 @@ function GameListPage() {
                   ? new Date(
                     mergedGame_UserGame.reviewedDate
                   ).toLocaleDateString("no-NO")
-                  : "Not available"}
+                  : "Not reviewed"}
               </p>
 
               <p>

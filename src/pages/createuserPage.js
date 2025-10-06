@@ -3,12 +3,14 @@ import './GameListPage.css'; // Or use a separate CreateUserPage.css
 import { useNavigate } from 'react-router-dom';
 import { postUserToDatabase } from '../api/usersApi';
 import gameReviewLogo from "../images/gameReviewLogo.png";
+import { FaSpinner } from 'react-icons/fa';
 function CreateUserPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const usernameInputRef = useRef(null);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [accountCreation, setAccountCreation] = useState(false);
     const navigate = useNavigate();
 
 
@@ -18,11 +20,14 @@ function CreateUserPage() {
 
     const handleCreateUser = async (e) => {
         e.preventDefault();
+        if (accountCreation)
+            return;
+
         if (password !== confirmPassword) {
             setPasswordError("Passwords don't match");
             return;
         }
-
+        setAccountCreation(true)
         setPasswordError('');
         const userInfo = {
             password: password,
@@ -35,9 +40,10 @@ function CreateUserPage() {
         }
         catch (err) {
             alert(err.response.data);
+            setAccountCreation(false);
             return;
         }
-
+        setAccountCreation(false);
         // Navigate back to login (optional)
         navigate('/');
     };
@@ -81,6 +87,10 @@ function CreateUserPage() {
             borderRadius: 6,
             cursor: 'pointer',
             transition: 'background-color 0.3s',
+        },
+        buttonDisabled: {
+            backgroundColor: '#6c757d',
+            cursor: 'not-allowed',
         },
         loginPrompt: {
             marginTop: '1.5rem',
@@ -142,9 +152,16 @@ function CreateUserPage() {
                         {passwordError}
                     </p>
                 )}
-                <button type="submit" style={styles.button}>
-                    Create Account
+                <button type="submit" disabled={accountCreation} style={accountCreation ? { ...styles.button, ...styles.buttonDisabled } : styles.button}>
+                    {accountCreation ? (
+                        <>
+                            Creating account... <FaSpinner className="spin" />
+                        </>
+                    ) : (
+                        'Create Account'
+                    )}
                 </button>
+
             </form>
 
             <p style={styles.loginPrompt}>

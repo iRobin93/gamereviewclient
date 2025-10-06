@@ -139,13 +139,24 @@ button.active,
 
 /* === GAME CARD === */
 .game-item {
-  position: relative;
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* pushes actions to bottom */
+  height: 100%; /* make all cards equal height */
 }
+
+.game-details {
+  flex-grow: 1; /* allows details section to take up extra space */
+}
+
+.game-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end; /* align buttons along bottom edge */
+  margin-top: auto; /* ensures it's pushed to bottom */
+  gap: 0.5rem;
+}
+
 
 .game-item:hover {
   transform: translateY(-3px);

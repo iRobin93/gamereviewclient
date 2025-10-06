@@ -117,14 +117,14 @@ useEffect(() => {
       setUserGames((prev) =>
         prev.map((r) =>
           r.id === userGame.id
-            ? { ...r, reviewText: null, rating: null, reviewed: false }
+            ? { ...r, reviewText: null, rating: null, reviewed: false , reviewedDate: null}
             : r
         )
       );
       setReviews((prev) => prev.filter((r) => r.id !== userGame.id));
       setGamesNeedRefresh(true);
 
-      const updated = { ...userGame, reviewed: false, reviewText: null, rating: null };
+      const updated = { ...userGame, reviewed: false, reviewText: null, rating: null, reviewedDate: null };
       await putUserGameToDatabase(userGame.id, updated);
     } catch (err) {
       console.error("Error clearing review:", err);

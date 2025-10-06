@@ -144,6 +144,9 @@ function LoginPage() {
 
   const handleLogin = async (e) => {
 
+
+
+    
     const fetchPlatforms = async () => {
       try {
         await fetchPlatformsFromRawG();

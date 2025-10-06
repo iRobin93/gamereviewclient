@@ -42,7 +42,7 @@ function AddGamePage() {
   ];
 
 
-    useEffect(() => {
+  useEffect(() => {
     setActiveSearch("gameReview");
     setResults(games);
     setSearchTerm("");
@@ -219,7 +219,17 @@ function AddGamePage() {
 
   // 🔍 Search Handler
   const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
+    if (!searchTerm.trim()) {
+      console.log("🔁 Empty search — showing all games");
+      if (activeSearch === "gameReview") {
+        setResults(games); // show all local games
+      } else {
+        // optional: clear RAWG results if search is empty
+        setResults([]);
+      }
+      setLoading(false);
+      return;
+    }
     setLoading(true);
 
     console.log("🔍 Active search mode:", activeSearch);
@@ -332,15 +342,22 @@ function AddGamePage() {
           </div>
 
           <div className="search-bar">
-            <input
-              type="text"
-              placeholder="Search for a game..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button className="button" onClick={handleSearch} disabled={loading}>
-              {loading ? 'Searching...' : 'Search'}
-            </button>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault(); // prevent page refresh
+                handleSearch();     // call your async search
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Search for a game..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <button type="submit" className="button" disabled={loading}>
+                {loading ? 'Searching...' : 'Search'}
+              </button>
+            </form>
           </div>
 
           <ul className="game-list">
@@ -468,15 +485,24 @@ function AddGamePage() {
         </div>
 
         <div className="search-bar">
-          <input
-            type="text"
-            placeholder="Search for a game..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <button className="button" onClick={handleSearch} disabled={loading}>
-            {loading ? 'Searching...' : 'Search'}
-          </button>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault(); // prevent page refresh
+              handleSearch();     // call your async search
+            }}
+          >
+
+
+            <input
+              type="text"
+              placeholder="Search for a game..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <button type="submit" className="button" disabled={loading}>
+              {loading ? 'Searching...' : 'Search'}
+            </button>
+          </form>
         </div>
 
         <ul className="game-list">
