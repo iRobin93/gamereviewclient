@@ -9,6 +9,8 @@ import { useUser } from "../context/UserContext";
 import { useUserGames } from "../context/UserGameContext";
 import { useGames } from "../context/GameContext";
 import { getUserGamesByGameId, putUserGameToDatabase } from "../api/userGamesApi";
+import { getGamePlatforms } from "../api/gamePlatformApi"
+import { getGameGenres } from "../api/gameGenresApi"
 
 export default function ViewReviewPage() {
   const { gameId } = useParams();
@@ -21,6 +23,10 @@ export default function ViewReviewPage() {
   const { gameplatforms } = useGamePlatforms();
   const { setGamesNeedRefresh } = useGames();
   const { setUserGames } = useUserGames();
+  const [platformNames, setPlatformNames] = useState("");
+  const [genreNames, setGenreNames] = useState("");
+
+
 
   const game = location.state?.game;
   const fromGameReview = location.state?.fromGameReview || false;
@@ -42,8 +48,66 @@ export default function ViewReviewPage() {
         setLoading(false);
       }
     };
+
+
     fetchReviews();
   }, [gameId]);
+
+
+useEffect(() => {
+  const loadRelations = async () => {
+    if (!game) return;
+
+    // ✅ Handle Genres (check local first, else fetch)
+    const gameGenreLinks = gamegenres?.filter((g) => g.game_id === game.id) || [];
+
+    if (gameGenreLinks.length > 0) {
+      const genreNames = gameGenreLinks
+        .map((link) => genres?.find((g) => g.id === link.genre_id)?.genreName)
+        .filter(Boolean)
+        .join(", ");
+      setGenreNames(genreNames || "N/A");
+    } else {
+      try {
+        const fetchedGameGenres = await getGameGenres(game.id);
+        const genreNames = fetchedGameGenres
+          .map((link) => genres?.find((g) => g.id === link.genre_id)?.genreName)
+          .filter(Boolean)
+          .join(", ");
+        setGenreNames(genreNames || "N/A");
+      } catch (err) {
+        console.error("❌ Failed to fetch genres:", err);
+        setGenreNames("N/A");
+      }
+    }
+
+    // ✅ Handle Platforms (check local first, else fetch)
+    const gamePlatformLinks = gameplatforms?.filter((p) => p.game_id === game.id) || [];
+
+    if (gamePlatformLinks.length > 0) {
+      const platformNames = gamePlatformLinks
+        .map((link) => platforms?.find((p) => p.id === link.platform_id)?.platformName)
+        .filter(Boolean)
+        .join(", ");
+      setPlatformNames(platformNames || "N/A");
+    } else {
+      try {
+        const fetchedGamePlatforms = await getGamePlatforms(game.id);
+        const platformNames = fetchedGamePlatforms
+          .map((link) => platforms?.find((p) => p.id === link.platform_id)?.platformName)
+          .filter(Boolean)
+          .join(", ");
+        setPlatformNames(platformNames || "N/A");
+      } catch (err) {
+        console.error("❌ Failed to fetch platforms:", err);
+        setPlatformNames("N/A");
+      }
+    }
+  };
+
+  loadRelations();
+}, [game, genres, platforms, gamegenres, gameplatforms]);
+
 
   // ✅ Delete a review (only for owner/admin)
   const handleDeleteReview = async (userGame) => {
@@ -67,23 +131,7 @@ export default function ViewReviewPage() {
       alert("Failed to clear review ❌");
     }
   };
-
-  // ✅ Helpers to get genre/platform names
-  const getGameGenres = (gameId) => {
-    const links = gamegenres?.filter((g) => g.game_id === gameId) || [];
-    return links
-      .map((link) => genres?.find((g) => g.id === link.genre_id)?.genreName)
-      .filter(Boolean)
-      .join(", ");
-  };
-
-  const getGamePlatforms = (gameId) => {
-    const links = gameplatforms?.filter((p) => p.game_id === gameId) || [];
-    return links
-      .map((link) => platforms?.find((p) => p.id === link.platform_id)?.platformName)
-      .filter(Boolean)
-      .join(", ");
-  };
+ 
 
   // ✅ Status icon helper
   const renderStatusIcon = (status) => {
@@ -138,10 +186,10 @@ export default function ViewReviewPage() {
                 </div>
               )}
               <div className="meta-item">
-                <strong>Platform:</strong> {getGamePlatforms(game.id) || "N/A"}
+                <strong>Platforms:</strong> {platformNames || "N/A"}
               </div>
               <div className="meta-item">
-                <strong>Genre:</strong> {getGameGenres(game.id) || "N/A"}
+                <strong>Genres:</strong> {genreNames || "N/A"}
               </div>
               <div className="meta-item">
                 <strong>Release Date:</strong>{" "}

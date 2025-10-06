@@ -183,24 +183,26 @@ function GameListPage() {
     setFilterShow(!filterShow)
   };
 
-  const handleDeleteUserGame = async (id, title) => {
+  const handleDeleteUserGame = async (usergameid, title, gameid) => {
 
-    const deleted = deleteUserGameFromUserGamesList(id, title);
+    const deleted = deleteUserGameFromUserGamesList(usergameid, title, gameid);
     if (deleted) {
-      deleteUserGameFromDatabase(id);
+      deleteUserGameFromDatabase(usergameid);
     }
 
 
   };
 
-  const deleteUserGameFromUserGamesList = (id, title) => {
-    const userGameToDelete = usergames.find(g => g.id === id);
+  const deleteUserGameFromUserGamesList = (usergameid, title, gameid) => {
+    const userGameToDelete = usergames.find(g => g.id === usergameid);
     if (!userGameToDelete) return false;
 
     const confirmDelete = window.confirm(`Delete game: ${title}?`);
     if (!confirmDelete) return false;
 
-    setUserGames(prevGames => prevGames.filter(game => game.id !== id));
+    setUserGames(prevUserGames => prevUserGames.filter(usergame => usergame.id !== usergameid));
+    setGameGenres(prevGameGenres => prevGameGenres.filter(gameGenre => gameGenre.game_id !== gameid));
+    setGamePlatforms(prevGamePlatforms => prevGamePlatforms.filter(gamePlatform => gamePlatform.game_id !== gameid));
     return true;
   };
 
@@ -522,7 +524,8 @@ function GameListPage() {
                 onClick={() =>
                   handleDeleteUserGame(
                     mergedGame_UserGame.userGame_id,
-                    mergedGame_UserGame.title
+                    mergedGame_UserGame.title,
+                    mergedGame_UserGame.id
                   )
                 }
               >

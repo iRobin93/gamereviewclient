@@ -3,8 +3,8 @@ import { BASE_URL } from '../model/generalData';
 
  // replace with actual URL
 
-export const getGameGenres = async (id) => {
-  const response = await axios.get(`${BASE_URL}/GameGenre?gameId=` + id );
+export const getGameGenres = async (GameId) => {
+  const response = await axios.get(`${BASE_URL}/GameGenre?gameId=` + GameId );
   return response.data;
 };
 
