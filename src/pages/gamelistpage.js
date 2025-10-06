@@ -503,7 +503,7 @@ function GameListPage() {
             <div className="game-actions">
               {
                 <button
-                  className="button"
+                  className="button review-btn "
                   onClick={() =>
                     handleReview(mergedGame_UserGame.userGame_id)
                   }
@@ -513,14 +513,14 @@ function GameListPage() {
               }
 
               <button
-                className="button"
+                className="button view-btn"
                 onClick={() => handleViewReviews(mergedGame_UserGame)}
               >
                 View Reviews
               </button>
 
               <button
-                className="button"
+                className="button delete-btn"
                 onClick={() =>
                   handleDeleteUserGame(
                     mergedGame_UserGame.userGame_id,

@@ -130,38 +130,6 @@ button.active,
   box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
 }
 
-/* === GAME LIST === */
-.game-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.2rem;
-}
-
-/* === GAME CARD === */
-.game-item {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between; /* pushes actions to bottom */
-  height: 100%; /* make all cards equal height */
-}
-
-.game-details {
-  flex-grow: 1; /* allows details section to take up extra space */
-}
-
-.game-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end; /* align buttons along bottom edge */
-  margin-top: auto; /* ensures it's pushed to bottom */
-  gap: 0.5rem;
-}
-
-
-.game-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-}
 
 /* === FAVORITED HIGHLIGHT === */
 .game-item.favorited {
@@ -181,6 +149,9 @@ button.active,
   font-size: 1.4rem;
   cursor: pointer;
 }
+
+
+
 
 /* === STATUS DROPDOWN === */
 .status-dropdown {
@@ -225,7 +196,7 @@ button.active,
 /* === GAME IMAGE === */
 .cover-image {
   width: 100%;
-  height: 200px;
+  height: 180px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 0.8rem;
@@ -233,8 +204,10 @@ button.active,
 
 /* === GAME DETAILS === */
 .game-details {
+  flex-grow: 1;
   font-size: 0.95rem;
   color: #333;
+  margin-bottom: 1rem;
 }
 
 .game-details h3 {
@@ -249,18 +222,12 @@ button.active,
   font-size: 1rem;
 }
 
-.rating-text {
-  color: #444;
-  margin-left: 0.3rem;
-}
-
-/* === GAME ACTIONS (bottom buttons) === */
+/* === GAME ACTIONS === */
 .game-actions {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   gap: 0.5rem;
-  margin-top: 1rem;
+  margin-top: auto;
 }
 
 .game-actions .button {
@@ -281,12 +248,7 @@ button.active,
   transform: scale(1.03);
 }
 
-/* Make sure all buttons are same height */
-.game-actions .button:not(:last-child) {
-  margin-right: 0.5rem;
-}
-
-/* On smaller screens, stack neatly */
+/* === MOBILE FRIENDLY === */
 @media (max-width: 600px) {
   .game-actions {
     flex-direction: column;
@@ -296,9 +258,51 @@ button.active,
     width: 100%;
     margin: 0.3rem 0;
   }
+
+  .cover-image {
+    height: 150px;
+  }
 }
 
+/* Medium screens — a bit more spacing */
+@media (max-width: 900px) {
+  .game-list {
+    row-gap: 3rem;
+  }
+}
 
-.cover-image {
-  height: 160px;
+/* Small screens — maximum breathing room */
+@media (max-width: 600px) {
+  .game-list {
+    row-gap: 3.5rem;
+  }
+}
+
+/* === ACTION BUTTON COLORS === */
+
+/* Review button (blue / primary) */
+.game-actions .button.review-btn {
+  background-color: #007bff;
+}
+
+.game-actions .button.review-btn:hover {
+  background-color: #0056b3;
+}
+
+/* View reviews button (purple / secondary) */
+.game-actions .button.view-btn {
+  background-color: #6f42c1;
+}
+
+.game-actions .button.view-btn:hover {
+  background-color: #5936a2;
+}
+
+/* Delete game button (red / danger) */
+.game-actions .button.delete-btn {
+  background-color: #dc3545;
+}
+
+.game-actions .button.delete-btn:hover {
+  background-color: #a71d2a;
 }
