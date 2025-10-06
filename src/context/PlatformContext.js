@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 const PlatformContext = createContext();
 
 export function PlatformProvider({ children }) {
-  const [platforms, setPlatforms] = useState(null);
+  const [platforms, setPlatforms] = useState([]);
 
   return (
     <PlatformContext.Provider value={{ platforms, setPlatforms }}>

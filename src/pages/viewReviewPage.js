@@ -115,7 +115,21 @@ export default function ViewReviewPage() {
           />
 
           <div className="game-info">
-            <h2>🎮 {game.title}</h2>
+            <div className="game-title-row">
+              <h2>🎮 {game.title}</h2>
+              <div className="average-rating">
+                <span className="rating-value">
+                  {game.averageReviewScore?.toFixed(1) ?? "0"} / 5.0
+                </span>
+                <span className="stars">
+                  {Array.from({ length: 5 }, (_, i) => (
+                    <span key={i} className="star">
+                      {i < Math.round(game.averageReviewScore ?? 0) ? "★" : "☆"}
+                    </span>
+                  ))}
+                </span>
+              </div>
+            </div>
 
             <div className="game-meta">
               {!fromGameReview && (
@@ -133,26 +147,17 @@ export default function ViewReviewPage() {
                 <strong>Release Date:</strong>{" "}
                 {game.releaseDate
                   ? new Date(game.releaseDate).toLocaleDateString("en-GB", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                  })
                   : "N/A"}
               </div>
             </div>
-
-            <p className="average-rating">
-              <strong>Average Review Score:</strong>{" "}
-              {game.averageReviewScore?.toFixed(1) ?? "0"} / 5.0{" "}
-              {Array.from({ length: 5 }, (_, i) => (
-                <span key={i} className="star">
-                  {i < Math.round(game.averageReviewScore ?? 0) ? "★" : "☆"}
-                </span>
-              ))}
-            </p>
           </div>
         </div>
       )}
+
 
       <h3>📝 Reviews</h3>
       {reviews.length === 0 ? (

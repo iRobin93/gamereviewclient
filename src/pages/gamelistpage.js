@@ -51,19 +51,19 @@ function GameListPage() {
   }, [usergamesNeedRefresh, setUsergamesNeedRefresh, setUserGames, user]);
 
 
-useEffect(() => {
-  const shouldFetch = gamesNeedRefresh || games.length === 0;
-  if (!shouldFetch) return;
+  useEffect(() => {
+    const shouldFetch = gamesNeedRefresh || games.length === 0;
+    if (!shouldFetch) return;
 
-  console.log('Fetching games...');
+    console.log('Fetching games...');
 
-  const refreshGames = async () => {
-    await fetchGames(setGames);
-    setGamesNeedRefresh(false);
-  };
+    const refreshGames = async () => {
+      await fetchGames(setGames);
+      setGamesNeedRefresh(false);
+    };
 
-  refreshGames();
-}, [gamesNeedRefresh, games.length, setGames, setGamesNeedRefresh]);
+    refreshGames();
+  }, [gamesNeedRefresh, games.length, setGames, setGamesNeedRefresh]);
 
   useEffect(() => {
     if (!gamePlatformsNeedRefresh) return;
@@ -175,9 +175,9 @@ useEffect(() => {
     navigate(`/reviewpage/${id}`);
   };
 
-const handleViewReviews = (game) => {
-  navigate(`/reviews/${game.id}`, { state: { game } });
-};
+  const handleViewReviews = (game) => {
+    navigate(`/reviews/${game.id}`, { state: { game } });
+  };
 
   const toggleFilters = () => {
     setFilterShow(!filterShow)
