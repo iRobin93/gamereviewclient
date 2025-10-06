@@ -242,74 +242,78 @@ function LoginPage() {
     }
   };
   const styles = {
-    container: {
-      maxWidth: '400px',
-      margin: '3rem auto',
-      padding: '2rem',
-      border: '1px solid #ddd',
-      borderRadius: '8px',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-      backgroundColor: '#fff',
-      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-    },
-    heading: {
-      textAlign: 'center',
-      marginBottom: '1.5rem',
-      color: '#333',
-    },
-    form: {
-      display: 'flex',
-      flexDirection: 'column',
-    },
-    input: {
-      padding: '0.75rem 1rem',
-      marginBottom: '1rem',
-      fontSize: '1rem',
-      borderWidth: '1px',
-      borderStyle: 'solid',
-      borderColor: '#ccc',
-      borderRadius: '4px',
-      outline: 'none',
-      transition: 'border-color 0.3s',
-    },
-    inputFocus: {
-      borderColor: '#007bff',
-      boxShadow: '0 0 0 3px rgba(0,123,255,0.25)',
-    },
-    button: {
-      padding: '0.75rem 1rem',
-      fontSize: '1rem',
-      borderRadius: '4px',
-      border: 'none',
-      backgroundColor: '#007bff',
-      color: '#fff',
-      cursor: 'pointer',
-      transition: 'background-color 0.3s',
-    },
-    buttonDisabled: {
-      backgroundColor: '#6c757d',
-      cursor: 'not-allowed',
-    },
-    createUserLink: {
-      marginTop: '1rem',
-      textAlign: 'center',
-      color: '#007bff',
-      textDecoration: 'underline',
-      cursor: 'pointer',
-    },
-    loadingContainer: {
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      marginTop: '4rem',
-      color: '#666',
-    },
-  };
+  container: {
+    maxWidth: '400px',
+    margin: '3rem auto',
+    padding: '2rem',
+    border: '1px solid #ddd',
+    borderRadius: '8px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    backgroundColor: '#fff',
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+  },
+  heading: {
+    textAlign: 'center',
+    marginBottom: '1.5rem',
+    color: '#333',
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  input: {
+    width: '100%',              // ✅ Make inputs full width
+    padding: '0.75rem 1rem',
+    marginBottom: '1rem',
+    fontSize: '1rem',
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: '#ccc',
+    borderRadius: '4px',
+    outline: 'none',
+    transition: 'border-color 0.3s',
+    boxSizing: 'border-box',    // ✅ Prevent overflow issues
+  },
+  inputFocus: {
+    borderColor: '#007bff',
+    boxShadow: '0 0 0 3px rgba(0,123,255,0.25)',
+  },
+  button: {
+    width: '100%',              // ✅ Make button same width
+    padding: '0.75rem 1rem',
+    fontSize: '1rem',
+    borderRadius: '4px',
+    border: 'none',
+    backgroundColor: '#007bff',
+    color: '#fff',
+    cursor: 'pointer',
+    transition: 'background-color 0.3s',
+  },
+  buttonDisabled: {
+    backgroundColor: '#6c757d',
+    cursor: 'not-allowed',
+  },
+  createUserLink: {
+    marginTop: '1rem',
+    textAlign: 'center',
+    color: '#007bff',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+  },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginTop: '4rem',
+    color: '#666',
+  },
+};
+
 
 
 
   return (
-    (
+    
       <div style={styles.container}>
 
         {/* Logo Section */}
@@ -374,7 +378,7 @@ function LoginPage() {
           </Link>
         </div>
       </div>
-    )
+    
   );
 }
 

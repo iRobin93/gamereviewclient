@@ -14,6 +14,12 @@ export const getUserGamesByGameId = async (id) => {
   return response.data;
 };
 
+
+export const getAllUserGames = async () => {
+  const response = await axios.get(`${BASE_URL}/UserGame`);
+  return response.data;
+};
+
 export const deleteUserGameFromDatabase = async (id) => {
   try {
     await axios.delete(`${BASE_URL}/UserGame/${id}`);

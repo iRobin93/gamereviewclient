@@ -49,19 +49,6 @@
   100% { transform: rotate(360deg); }
 }
 
-input[type="text"],
-input[type="password"],
-input[type="email"] {
-  width: 100%;
-  max-width: 300px;
-  padding: 10px;
-  margin: 8px 0;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-}
-
 
 /* === GLOBAL PAGE BACKGROUND === */
 body {

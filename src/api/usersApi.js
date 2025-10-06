@@ -55,3 +55,22 @@ export async function updateUserRole(userId, isAdmin) {
     throw error;
   }
 }
+
+
+export async function resetUserPassword(userId) {
+  try {
+    // generate a random temporary password
+    const newPassword = Math.random().toString(36).slice(-8); // e.g. "a9k2x8qz"
+
+    // send the update request
+    await axios.put(`${BASE_URL}/User/${userId}/password`, {
+      password: newPassword,
+    });
+
+    // return the new password (for admin to show)
+    return newPassword;
+  } catch (err) {
+    console.error("Failed to reset user password:", err);
+    throw err;
+  }
+}
