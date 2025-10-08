@@ -306,8 +306,9 @@ function GameListPage() {
     }
 
     // ✅ Backend logic goes here
-    // await api.post('/change-password', { currentPassword, newPassword });
+    
     const response = await changeUserPassword(user.id, currentPassword, newPassword, confirmPassword);
+
 
     if (response.status === 200) {
       alert("✅ Password successfully changed!");
