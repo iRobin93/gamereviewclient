@@ -26,17 +26,17 @@ body {
 .add-game-container h2 {
   text-align: center;
   margin-bottom: 1.8rem;
-  color: #333;
+  color: #f7f7f7;
   font-size: 1.8rem;
 }
 
 .settings-icon {
-  position: absolute;
   top: 15px;
   right: 20px;
   font-size: 1.6rem;
   cursor: pointer;
   transition: transform 0.2s ease, opacity 0.2s ease;
+  z-index: 1;
 }
 
 .settings-icon:hover {
@@ -421,3 +421,123 @@ button.active,
   border: 1px solid #ccc;
   border-radius: 6px;
 }
+
+
+/* === HEADER BAR === */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #007bff 0%, #00b4d8 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.header-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -60px;
+  width: 140px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  transform: skewX(-20deg);
+}
+
+/* 🎮 Title */
+.header-container h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.username:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+
+/* === HEADER BAR === */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #007bff 0%, #00b4d8 100%);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin-bottom: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  z-index: 1; /* base layer */
+}
+
+/* Light streak behind elements */
+.header-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -60px;
+  width: 140px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  transform: skewX(-20deg);
+  z-index: 0; /* stays behind everything */
+}
+
+/* Title */
+.header-container h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem; /* reduced gap between username and cog */
+  z-index: 2;
+  position: relative;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #f8f9fa;
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 0.4rem 0.9rem;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  z-index: 2;
+  position: relative;
+  margin-right: 9rem; /* 👈 moves it slightly left */
+}
+
+.settings-icon {
+  font-size: 1.4rem;
+  color: #fff;
+  cursor: pointer;
+  position: relative;
+  z-index: 3;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.settings-icon:hover {
+  color: #e0e0e0;
+  transform: rotate(20deg) scale(1.1);
+}
+

@@ -306,7 +306,7 @@ function GameListPage() {
     }
 
     // ✅ Backend logic goes here
-    
+
     const response = await changeUserPassword(user.id, currentPassword, newPassword, confirmPassword);
 
 
@@ -357,7 +357,11 @@ function GameListPage() {
       </div>
 
 
-      <h2>🎮 My Game List</h2>
+      <div className="header-container">
+        <h2>🎮 My Game List</h2>
+        <span className="username">{user.username}</span>
+      </div>
+
 
 
       <div className="top-buttons">
