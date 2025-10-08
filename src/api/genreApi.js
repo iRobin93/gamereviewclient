@@ -1,10 +1,8 @@
 import axios from 'axios';
-import { BASE_URL } from '../model/generalData';
-
-// replace with actual URL
+import { api } from '../model/generalData';
 
 export const getGenres = async () => {
-  const response = await axios.get(`${BASE_URL}/Genre`);
+  const response = await api.get(`/Genre`);
   return response.data;
 };
 
@@ -25,7 +23,7 @@ export const postRawGGenresToDatabase = async (rawGGenresList) => {
       rawGId: genre.id,
       genreName: genre.name
     }
-    await axios.post(`${BASE_URL}/Genre`, genreObject);
+    await api.post(`/Genre`, genreObject);
   }
 };
 

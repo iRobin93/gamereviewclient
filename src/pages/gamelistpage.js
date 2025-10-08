@@ -12,15 +12,15 @@ import { useGenres } from '../context/GenreContext';
 import { usePlatforms } from '../context/PlatformContext'
 import { deleteUserGameFromDatabase } from '../api/userGamesApi'
 import { putUserGameToDatabase } from '../api/userGamesApi'
-import { fetchGames } from '../App'
+import { changeUserPassword } from '../api/usersApi.js'
 import AdminButton from '../buttons/AdminButton.js';
 
 function GameListPage() {
-  const { user, setUser } = useUser();
+  const { user, logout } = useUser();
   const [filterShow, setFilterShow] = useState(false);
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
-  const { games, gamesNeedRefresh, setGamesNeedRefresh, setGames } = useGames();
+  const { games } = useGames();
   const { usergames, setUserGames, setUsergamesNeedRefresh, usergamesNeedRefresh } = useUserGames();
   const { gamegenres, setGameGenres } = useGameGenres();
   const { gameplatforms, gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh, setGamePlatforms } = useGamePlatforms();
@@ -56,20 +56,6 @@ function GameListPage() {
     refreshUserGames();
   }, [usergamesNeedRefresh, setUsergamesNeedRefresh, setUserGames, user]);
 
-
-  useEffect(() => {
-    const shouldFetch = gamesNeedRefresh || games.length === 0;
-    if (!shouldFetch) return;
-
-    console.log('Fetching games...');
-
-    const refreshGames = async () => {
-      await fetchGames(setGames);
-      setGamesNeedRefresh(false);
-    };
-
-    refreshGames();
-  }, [gamesNeedRefresh, games.length, setGames, setGamesNeedRefresh]);
 
   useEffect(() => {
     if (!gamePlatformsNeedRefresh) return;
@@ -108,7 +94,7 @@ function GameListPage() {
 
 
   const handleLogout = () => {
-    setUser(null)
+    logout();
     navigate('/');
   };
 
@@ -301,41 +287,39 @@ function GameListPage() {
     setUserGames(updatedUserGames);
   };
 
+
+
   const handleChangePassword = () => {
-    setShowSettings(false); // close dropdown
+    setShowSettings(false);
+    setShowPasswordModal(true);
+  };
 
-    const currentPassword = prompt("Enter your current password:");
-    if (currentPassword === null || currentPassword.trim() === "") {
-      alert("Password change cancelled.");
-      return;
-    }
-
-    const newPassword = prompt("Enter your new password:");
-    if (newPassword === null || newPassword.trim().length < 4) {
+  const handleSubmitPasswordChange = async () => {
+    if (newPassword.trim().length < 4) {
       alert("New password must be at least 4 characters long.");
       return;
     }
 
-    const confirmPassword = prompt("Confirm your new password:");
-    if (confirmPassword === null) {
-      alert("Password change cancelled.");
-      return;
-    }
-
     if (newPassword !== confirmPassword) {
-      alert("❌ The passwords do not match. Please try again.");
+      alert("❌ The passwords do not match.");
       return;
     }
 
-    // ✅ If all checks pass, handle password change logic here
-    // await api.post(`/users/${user.id}/change-password`, {
-    //   currentPassword,
-    //   newPassword
-    // });
+    // ✅ Backend logic goes here
+    // await api.post('/change-password', { currentPassword, newPassword });
+    const response = await changeUserPassword(user.id, currentPassword, newPassword, confirmPassword);
 
-    alert("✅ Your password has been successfully changed!");
+    if (response.status === 200) {
+      alert("✅ Password successfully changed!");
+    }
+    else {
+      alert('❌ Something went wrong, try again another time!');
+    }
+    setShowPasswordModal(false);
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
   };
-
 
 
 

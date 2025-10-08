@@ -115,7 +115,7 @@ function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const navigate = useNavigate();
-  const { setUser } = useUser();
+  const { login } = useUser();
   const { setUserGames } = useUserGames();
   const { setGames } = useGames();
   const { setGenres } = useGenres();
@@ -137,7 +137,11 @@ function LoginPage() {
 
   }, []);
 
-
+  useEffect(() => {
+    // ✅ Remove token & user on refresh
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("user");
+  }, []);
 
 
 
@@ -146,7 +150,7 @@ function LoginPage() {
 
 
 
-    
+
     const fetchPlatforms = async () => {
       try {
         await fetchPlatformsFromRawG();
@@ -211,9 +215,13 @@ function LoginPage() {
       const response = await loginToSite({ username, password });
 
 
+
       if (response.success) {
+        login(response.data.user, response.data.token);
         console.log("Logged in:", response.data);
-      } else {
+        // optionally store in state/context too
+      }
+      else {
         const statusText = response.status ? ` ${response.status}` : "";
         const errorText = response.error || "Unknown error";
         alert(`Login error:${statusText} — ${errorText}`);
@@ -223,13 +231,12 @@ function LoginPage() {
 
 
       const userObject = response.data;
-      setUser(userObject);
 
       await fetchGames(setGames);
       await fetchGenres();
       await fetchPlatforms();
 
-      const userGames = await fetchUserGames(userObject.id, setUserGames);
+      const userGames = await fetchUserGames(userObject.user.id, setUserGames);
       await fetchGamePlatforms(userGames, setGamePlatforms);
       await fetchGameGenres(userGames, setGameGenres);
 
@@ -242,143 +249,143 @@ function LoginPage() {
     }
   };
   const styles = {
-  container: {
-    maxWidth: '400px',
-    margin: '3rem auto',
-    padding: '2rem',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    backgroundColor: '#fff',
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-  },
-  heading: {
-    textAlign: 'center',
-    marginBottom: '1.5rem',
-    color: '#333',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  input: {
-    width: '100%',              // ✅ Make inputs full width
-    padding: '0.75rem 1rem',
-    marginBottom: '1rem',
-    fontSize: '1rem',
-    borderWidth: '1px',
-    borderStyle: 'solid',
-    borderColor: '#ccc',
-    borderRadius: '4px',
-    outline: 'none',
-    transition: 'border-color 0.3s',
-    boxSizing: 'border-box',    // ✅ Prevent overflow issues
-  },
-  inputFocus: {
-    borderColor: '#007bff',
-    boxShadow: '0 0 0 3px rgba(0,123,255,0.25)',
-  },
-  button: {
-    width: '100%',              // ✅ Make button same width
-    padding: '0.75rem 1rem',
-    fontSize: '1rem',
-    borderRadius: '4px',
-    border: 'none',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    cursor: 'pointer',
-    transition: 'background-color 0.3s',
-  },
-  buttonDisabled: {
-    backgroundColor: '#6c757d',
-    cursor: 'not-allowed',
-  },
-  createUserLink: {
-    marginTop: '1rem',
-    textAlign: 'center',
-    color: '#007bff',
-    textDecoration: 'underline',
-    cursor: 'pointer',
-  },
-  loadingContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginTop: '4rem',
-    color: '#666',
-  },
-};
+    container: {
+      maxWidth: '400px',
+      margin: '3rem auto',
+      padding: '2rem',
+      border: '1px solid #ddd',
+      borderRadius: '8px',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+      backgroundColor: '#fff',
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    },
+    heading: {
+      textAlign: 'center',
+      marginBottom: '1.5rem',
+      color: '#333',
+    },
+    form: {
+      display: 'flex',
+      flexDirection: 'column',
+    },
+    input: {
+      width: '100%',              // ✅ Make inputs full width
+      padding: '0.75rem 1rem',
+      marginBottom: '1rem',
+      fontSize: '1rem',
+      borderWidth: '1px',
+      borderStyle: 'solid',
+      borderColor: '#ccc',
+      borderRadius: '4px',
+      outline: 'none',
+      transition: 'border-color 0.3s',
+      boxSizing: 'border-box',    // ✅ Prevent overflow issues
+    },
+    inputFocus: {
+      borderColor: '#007bff',
+      boxShadow: '0 0 0 3px rgba(0,123,255,0.25)',
+    },
+    button: {
+      width: '100%',              // ✅ Make button same width
+      padding: '0.75rem 1rem',
+      fontSize: '1rem',
+      borderRadius: '4px',
+      border: 'none',
+      backgroundColor: '#007bff',
+      color: '#fff',
+      cursor: 'pointer',
+      transition: 'background-color 0.3s',
+    },
+    buttonDisabled: {
+      backgroundColor: '#6c757d',
+      cursor: 'not-allowed',
+    },
+    createUserLink: {
+      marginTop: '1rem',
+      textAlign: 'center',
+      color: '#007bff',
+      textDecoration: 'underline',
+      cursor: 'pointer',
+    },
+    loadingContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginTop: '4rem',
+      color: '#666',
+    },
+  };
 
 
 
 
   return (
-    
-      <div style={styles.container}>
 
-        {/* Logo Section */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
-          <img
-            src={gameReviewLogo}
-            alt="GameReview Logo"
-            style={{ width: "150px", height: "auto" }}
-          />
-        </div>
+    <div style={styles.container}>
 
-        <h2 style={styles.heading}>Login</h2>
-
-        <form onSubmit={handleLogin} style={styles.form}>
-          <input
-            ref={usernameInputRef}
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{
-              ...styles.input,
-              ...(inputFocus.username ? styles.inputFocus : {}),
-            }}
-            onFocus={() => setInputFocus(f => ({ ...f, username: true }))}
-            onBlur={() => setInputFocus(f => ({ ...f, username: false }))}
-            autoComplete="username"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{
-              ...styles.input,
-              ...(inputFocus.password ? styles.inputFocus : {}),
-            }}
-            onFocus={() => setInputFocus(f => ({ ...f, password: true }))}
-            onBlur={() => setInputFocus(f => ({ ...f, password: false }))}
-            autoComplete="current-password"
-            required
-          />
-          <button
-            type="submit"
-            disabled={isLoggingIn}
-            style={isLoggingIn ? { ...styles.button, ...styles.buttonDisabled } : styles.button}
-          >
-            {isLoggingIn ? (
-              <>
-                Logging in... <FaSpinner className="spin" />
-              </>
-            ) : (
-              'Login'
-            )}
-          </button>
-        </form>
-
-        <div style={styles.createUserLink}>
-          <Link to="/createuserPage" style={{ color: 'inherit', textDecoration: 'inherit' }}>
-            Create User
-          </Link>
-        </div>
+      {/* Logo Section */}
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+        <img
+          src={gameReviewLogo}
+          alt="GameReview Logo"
+          style={{ width: "150px", height: "auto" }}
+        />
       </div>
-    
+
+      <h2 style={styles.heading}>Login</h2>
+
+      <form onSubmit={handleLogin} style={styles.form}>
+        <input
+          ref={usernameInputRef}
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          style={{
+            ...styles.input,
+            ...(inputFocus.username ? styles.inputFocus : {}),
+          }}
+          onFocus={() => setInputFocus(f => ({ ...f, username: true }))}
+          onBlur={() => setInputFocus(f => ({ ...f, username: false }))}
+          autoComplete="username"
+          required
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            ...styles.input,
+            ...(inputFocus.password ? styles.inputFocus : {}),
+          }}
+          onFocus={() => setInputFocus(f => ({ ...f, password: true }))}
+          onBlur={() => setInputFocus(f => ({ ...f, password: false }))}
+          autoComplete="current-password"
+          required
+        />
+        <button
+          type="submit"
+          disabled={isLoggingIn}
+          style={isLoggingIn ? { ...styles.button, ...styles.buttonDisabled } : styles.button}
+        >
+          {isLoggingIn ? (
+            <>
+              Logging in... <FaSpinner className="spin" />
+            </>
+          ) : (
+            'Login'
+          )}
+        </button>
+      </form>
+
+      <div style={styles.createUserLink}>
+        <Link to="/createuserPage" style={{ color: 'inherit', textDecoration: 'inherit' }}>
+          Create User
+        </Link>
+      </div>
+    </div>
+
   );
 }
 

@@ -1,28 +1,26 @@
-import axios from 'axios';
-import { BASE_URL } from '../model/generalData';
+import { api } from '../model/generalData';
 
-// replace with actual URL
 
 export const getUserGamesByUserId = async (id) => {
-  const response = await axios.get(`${BASE_URL}/UserGame?userId=` + id);
+  const response = await api.get(`/UserGame?userId=` + id);
   return response.data;
 };
 
 
 export const getUserGamesByGameId = async (id) => {
-  const response = await axios.get(`${BASE_URL}/UserGame?gameId=` + id);
+  const response = await api.get(`/UserGame?gameId=` + id);
   return response.data;
 };
 
 
 export const getAllUserGames = async () => {
-  const response = await axios.get(`${BASE_URL}/UserGame`);
+  const response = await api.get(`/UserGame`);
   return response.data;
 };
 
 export const deleteUserGameFromDatabase = async (id) => {
   try {
-    await axios.delete(`${BASE_URL}/UserGame/${id}`);
+    await api.delete(`/UserGame/${id}`);
   } catch (error) {
     const message = error.response?.data || error.message;
     throw new Error(`Delete failed: ${message}`);
@@ -31,7 +29,7 @@ export const deleteUserGameFromDatabase = async (id) => {
 
 export const postUserGameToDatabase = async (newUserGame) => {
   newUserGame.id = undefined;
-  const response = await axios.post(`${BASE_URL}/UserGame`, newUserGame);
+  const response = await api.post(`/UserGame`, newUserGame);
   newUserGame.id = response.data.id;
   return response.data;
 };
@@ -39,7 +37,7 @@ export const postUserGameToDatabase = async (newUserGame) => {
 
 export const putUserGameToDatabase = async (id, userGameData) => {
   try {
-    const response = await axios.put(`${BASE_URL}/UserGame/${id}`, userGameData, {
+    const response = await api.put(`/UserGame/${id}`, userGameData, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': '*/*'
@@ -56,7 +54,7 @@ export const putUserGameToDatabase = async (id, userGameData) => {
 
 export const putUserGameReview = async (id, updatedUserGame) => {
   try {
-    const response = await axios.put(`${BASE_URL}/UserGame/${id}`, updatedUserGame, {
+    const response = await api.put(`/UserGame/${id}`, updatedUserGame, {
       headers: { 'Content-Type': 'application/json' }
     });
     return response.data;
@@ -71,7 +69,7 @@ export const putUserGameReview = async (id, updatedUserGame) => {
 };
 
 export const deleteUserGameReview = async (userGameId, userId) => {
-  const res = await axios.delete(`${BASE_URL}/UserGame/${userGameId}/review`, {
+  const res = await api.delete(`/UserGame/${userGameId}/review`, {
     params: { userId },
   });
   return res.data;

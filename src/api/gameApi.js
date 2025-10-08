@@ -1,28 +1,27 @@
-import axios from 'axios';
-import { BASE_URL } from '../model/generalData';
+import { api } from '../model/generalData';
 
  // replace with actual URL
 
 export const getGames = async () => {
-  const response = await axios.get(`${BASE_URL}/Game` );
+  const response = await api.get(`/Game` );
   return response.data;
 };
 export const getGame = async (game_id) => {
-  const response = await axios.get(`${BASE_URL}/Game/${game_id}` );
+  const response = await api.get(`/Game/${game_id}` );
   return response.data;
 };
 
 export const postGameToDatabase = async (game) => {
   game.id = undefined;
-  const response = await axios.post(`${BASE_URL}/Game` , game);
+  const response = await api.post(`/Game` , game);
   game.id = response.data.id;
   return response.data;
 };
 
 export const updateAverageScore = async (gameId, averageScore) => {
   try {
-    const response = await axios.put(
-      `${BASE_URL}/Game/${gameId}/average-score`,
+    const response = await api.put(
+      `/Game/${gameId}/average-score`,
       averageScore, // raw number, not an object
       {
         headers: {

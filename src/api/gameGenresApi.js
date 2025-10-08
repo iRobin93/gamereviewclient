@@ -1,22 +1,21 @@
-import axios from 'axios';
-import { BASE_URL } from '../model/generalData';
+import { api } from '../model/generalData';
 
  // replace with actual URL
 
 export const getGameGenres = async (GameId) => {
-  const response = await axios.get(`${BASE_URL}/GameGenre?gameId=` + GameId );
+  const response = await api.get(`/GameGenre?gameId=` + GameId );
   return response.data;
 };
 
 export const postGameGenreToDatabase = async (newGameGenre) => {
 
-    await axios.post(`${BASE_URL}/GameGenre`, newGameGenre);
+    await api.post(`/GameGenre`, newGameGenre);
   
 };
 
 export const deleteGameGenreFromDatabase = async (id) => {
   try {
-    await axios.delete(`${BASE_URL}/GameGenre/${id}`);
+    await api.delete(`/GameGenre/${id}`);
   } catch (error) {
     const message = error.response?.data || error.message;
     throw new Error(`Delete failed: ${message}`);

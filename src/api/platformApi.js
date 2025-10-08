@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { BASE_URL } from '../model/generalData';
+import { api } from '../model/generalData';
 
 // replace with actual URL
 
 export const getPlatforms = async () => {
-  const response = await axios.get(`${BASE_URL}/Platform`);
+  const response = await api.get(`/Platform`);
   return response.data;
 };
 
@@ -25,12 +25,11 @@ export const postRawGPlatformsToDatabase = async (rawGPlatformsList) => {
       rawGId: platform.id,
       platformName: platform.name
     }
-    await axios.post(`${BASE_URL}/Platform`, platformObject);
+    await api.post(`/Platform`, platformObject);
   }
 };
 
 export const postOneRawGPlatformsToDatabase = async (rawGPlatform) => {
-  const response = await axios.post(`${BASE_URL}/Platform`, rawGPlatform);
+  const response = await api.post(`/Platform`, rawGPlatform);
   return response.data;
 };
-

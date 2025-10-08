@@ -1,27 +1,32 @@
-import axios from 'axios';
-import { BASE_URL } from '../model/generalData';
-// replace with actual URL
+import { api } from "../model/generalData";
 
+// 🧩 Get all users
 export const getUsers = async () => {
-  const response = await axios.get(`${BASE_URL}/User`);
+  const response = await api.get(`/User`);
   return response.data; // assuming it returns an array of users
 };
 
+// 🧩 Create a new user
 export const postUserToDatabase = async (userInfo) => {
-  const response = await axios.post(`${BASE_URL}/User`, userInfo);
+  const response = await api.post(`/User`, userInfo);
   return response.data;
 };
 
-
-
+// 🧩 Login
 export const loginToSite = async (userInfo) => {
   try {
-    const response = await axios.post(`${BASE_URL}/User/Login`, userInfo, {
+    const response = await api.post(`/User/Login`, userInfo, {
       validateStatus: () => true, // don't throw on 4xx
     });
 
     if (response.status >= 200 && response.status < 300) {
       // ✅ Successful login
+      const { user, token } = response.data;
+
+      // Save to localStorage (so interceptor can attach token)
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("token", token);
+
       return {
         success: true,
         status: response.status,
@@ -36,7 +41,7 @@ export const loginToSite = async (userInfo) => {
       };
     }
   } catch (err) {
-    // ❌ Network or unexpected error
+    console.error("Network error during login:", err);
     return {
       success: false,
       status: null,
@@ -45,32 +50,40 @@ export const loginToSite = async (userInfo) => {
   }
 };
 
-// ✅ Update user role (admin / normal)
-export async function updateUserRole(userId, isAdmin) {
+// 🧩 Update user role (admin only)
+export const updateUserRole = async (userId, isAdmin) => {
   try {
-    const response = await axios.put(`${BASE_URL}/User/${userId}/role`, { isAdmin });
+    const response = await api.put(`/User/${userId}/role`, { isAdmin });
     return response.data;
   } catch (error) {
-    console.error('❌ Error updating user role:', error);
+    console.error("❌ Error updating user role:", error);
     throw error;
   }
-}
+};
 
-
-export async function resetUserPassword(userId) {
+// 🧩 Admin: Reset user password
+export const resetUserPassword = async (userId) => {
   try {
-    // generate a random temporary password
-    const newPassword = Math.random().toString(36).slice(-8); // e.g. "a9k2x8qz"
-
-    // send the update request
-    await axios.put(`${BASE_URL}/User/${userId}/password`, {
-      password: newPassword,
-    });
-
-    // return the new password (for admin to show)
-    return newPassword;
+    const newPassword = Math.random().toString(36).slice(-8); // random temp password
+    await api.put(`/User/${userId}/reset_password`, { password: newPassword });
+    console.log(api, newPassword)
+    return newPassword; // return to display to admin
   } catch (err) {
     console.error("Failed to reset user password:", err);
     throw err;
   }
-}
+};
+
+// 🧩 User: Change own password
+export const changeUserPassword = async (userId, currentPassword, newPassword) => {
+  try {
+    const response = await api.put(`/User/${userId}/change_password`, {
+      currentPassword,
+      newPassword,
+    });
+    return response;
+  } catch (err) {
+    console.error("Failed to change user password:", err);
+    throw err;
+  }
+};

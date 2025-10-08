@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 export default function AdminButton({ user }) {
   const navigate = useNavigate();
 
-  if (!user || !user.isAdmin) {
+  if (!user) {
     return null; // Hide if not admin
   }
 

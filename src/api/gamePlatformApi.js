@@ -1,22 +1,21 @@
-import axios from 'axios';
-import { BASE_URL } from '../model/generalData';
+import { api } from '../model/generalData';
 
  // replace with actual URL
 
 export const getGamePlatforms = async (id) => {
-  const response = await axios.get(`${BASE_URL}/GamePlatform?gameId=` + id );
+  const response = await api.get(`/GamePlatform?gameId=` + id );
   return response.data;
 };
 
 export const postGamePlatformToDatabase = async (newGamePlatform) => {
 
-    await axios.post(`${BASE_URL}/GamePlatform`, newGamePlatform);
+    await api.post(`/GamePlatform`, newGamePlatform);
   
 };
 
 export const deleteGamePlatformFromDatabase = async (id) => {
   try {
-    await axios.delete(`${BASE_URL}/GamePlatform/${id}`);
+    await api.delete(`/GamePlatform/${id}`);
   } catch (error) {
     const message = error.response?.data || error.message;
     throw new Error(`Delete failed: ${message}`);

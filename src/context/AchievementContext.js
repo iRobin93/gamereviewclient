@@ -12,7 +12,7 @@ export function AchievementProvider({ children }) {
 
   const refreshAchievements = useCallback(async () => {
     if (!user?.id) return;
-
+    console.log(user);
     setLoading(true);
     try {
       const responseData = await getAchievements(user.id);
