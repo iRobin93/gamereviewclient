@@ -31,6 +31,12 @@ function GameListPage() {
   const [activePlatforms, setActivePlatforms] = useState([]);
   const [activeGenres, setActiveGenres] = useState([]);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
 
   useEffect(() => {
     if (!user) {
@@ -295,6 +301,43 @@ function GameListPage() {
     setUserGames(updatedUserGames);
   };
 
+  const handleChangePassword = () => {
+    setShowSettings(false); // close dropdown
+
+    const currentPassword = prompt("Enter your current password:");
+    if (currentPassword === null || currentPassword.trim() === "") {
+      alert("Password change cancelled.");
+      return;
+    }
+
+    const newPassword = prompt("Enter your new password:");
+    if (newPassword === null || newPassword.trim().length < 4) {
+      alert("New password must be at least 4 characters long.");
+      return;
+    }
+
+    const confirmPassword = prompt("Confirm your new password:");
+    if (confirmPassword === null) {
+      alert("Password change cancelled.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("❌ The passwords do not match. Please try again.");
+      return;
+    }
+
+    // ✅ If all checks pass, handle password change logic here
+    // await api.post(`/users/${user.id}/change-password`, {
+    //   currentPassword,
+    //   newPassword
+    // });
+
+    alert("✅ Your password has been successfully changed!");
+  };
+
+
+
 
   const displayedGames = showOnlyFavorites
     ? filteredUserGames.filter(game => game.favourite === true)
@@ -302,7 +345,35 @@ function GameListPage() {
 
   return (
     <div className="game-list-container">
-      <h2>🎮 Game List</h2>
+      {/* ⚙️ Settings Dropdown */}
+      <div className="settings-container">
+        <div
+          className="settings-icon"
+          onClick={() => setShowSettings((prev) => !prev)}
+          title="Settings"
+        >
+          ⚙️
+        </div>
+
+        {showSettings && (
+          <div className="settings-dropdown">
+            <div className="dropdown-item" onClick={handleChangePassword}>
+              🔐 Change Password
+            </div>
+            <div className="dropdown-divider"></div>
+            <div
+              className="dropdown-item close-item"
+              onClick={() => setShowSettings(false)}
+            >
+              ❌ Close Settings
+            </div>
+          </div>
+        )}
+      </div>
+
+
+      <h2>🎮 My Game List</h2>
+
 
       <div className="top-buttons">
         <button onClick={handleLogout} className="logout-button">
@@ -535,7 +606,43 @@ function GameListPage() {
           </div>
         ))}
       </div>
+      {showPasswordModal && (
+        <div className="password-modal">
+          <div className="modal-content">
+            <h3>Change Password</h3>
+
+            <label>Current Password</label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+
+            <label>New Password</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+
+            <label>Confirm New Password</label>
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+
+            <div className="modal-buttons">
+              <button onClick={handleSubmitPasswordChange}>Save</button>
+              <button onClick={() => setShowPasswordModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+
+
   );
 
 

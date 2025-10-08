@@ -78,8 +78,9 @@ function AdminPage() {
     if (!window.confirm('Reset password for this user?')) return;
     try {
       const newPassword = await resetUserPassword(userId);
-      console.log(newPassword);
-      alert(`Password reset successful.\nTemporary password: ${newPassword}`);
+      
+      await navigator.clipboard.writeText(newPassword);
+      alert(`Password reset successful.\nTemporary password: ${newPassword} \n(copied to clipboard ✅)`);
     } catch (error) {
       alert('Failed to reset password');
     }
@@ -201,6 +202,7 @@ function AdminPage() {
                 >
                   Reset Password
                 </button>
+
               </td>
             </tr>
           ))}
