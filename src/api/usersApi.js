@@ -8,8 +8,13 @@ export const getUsers = async () => {
 
 // 🧩 Create a new user
 export const postUserToDatabase = async (userInfo) => {
-  const response = await api.post(`/User`, userInfo);
+  try{
+ const response = await api.post(`/User`, userInfo);
   return response.data;
+  }
+ catch(err){
+  throw(err);
+ }
 };
 
 // 🧩 Login

@@ -39,7 +39,7 @@ function CreateUserPage() {
 
         }
         catch (err) {
-            alert(err.response.data);
+            alert(err.message);
             setAccountCreation(false);
             return;
         }
