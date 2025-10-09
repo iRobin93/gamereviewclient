@@ -153,7 +153,7 @@ function LoginPage() {
 
     const fetchPlatforms = async () => {
       try {
-        await fetchPlatformsFromRawG();
+        //old await fetchPlatformsFromRawG();
         const Platforms = await getPlatforms();
         setPlatforms(Platforms);
       } catch (error) {
@@ -181,7 +181,7 @@ function LoginPage() {
 
     const fetchGenres = async () => {
       try {
-        await fetchGenresFromRawG();
+        // old await fetchGenresFromRawG();
         const Genres = await getGenres();
         setGenres(Genres);
       } catch (error) {
