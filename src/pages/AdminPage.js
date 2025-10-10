@@ -77,7 +77,7 @@ function AdminPage() {
     if (!window.confirm('Reset password for this user?')) return;
     try {
       const newPassword = await resetUserPassword(userId);
-      
+
       await navigator.clipboard.writeText(newPassword);
       alert(`Password reset successful.\nTemporary password: ${newPassword} \n(copied to clipboard ✅)`);
     } catch (error) {
@@ -164,95 +164,125 @@ function AdminPage() {
   // }
 
   return (
-    <div className="admin-container">
-      <div className="admin-header">
-        <h1>Admin Dashboard</h1>
-        <p>Welcome, <span className="admin-username">{user.username}</span></p>
-        <button className="back-btn" onClick={() => navigate(-1)}>← Back</button>
-      </div>
+    <div className="page-wrapper">
+      <div className="page-content admin-container">
+        <header className="page-header">
+          <h1>Admin Dashboard</h1>
+          <p>
+            Welcome, <span className="admin-username">{user.username}</span>
+          </p>
+          <button className="button secondary" onClick={() => navigate(-1)}>
+            ← Back
+          </button>
+        </header>
 
-      {/* 🧑‍💻 Users */}
-      <h2>Manage Users</h2>
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Username</th>
-            <th>Role</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {users.map(u => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
-              <td>{u.username}</td>
-              <td>{u.isAdmin ? 'Admin' : 'User'}</td>
-              <td>
-                <button
-                  className={`role-btn ${u.isAdmin ? 'demote' : 'promote'}`}
-                  onClick={() => handleRoleToggle(u.id, u.isAdmin)}
-                >
-                  {u.isAdmin ? 'Demote' : 'Promote'}
-                </button>
-                <button
-                  className="reset-btn"
-                  onClick={() => handleResetPassword(u.id)}
-                >
-                  Reset Password
-                </button>
+        {/* === Manage Users === */}
+        <section className="admin-section">
+          <h2>Manage Users</h2>
 
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          <div className="card table-card">
+            {/* Static header (always visible) */}
+            <div className="table-header">
+              <div>ID</div>
+              <div>Username</div>
+              <div>Role</div>
+              <div>Actions</div>
+            </div>
 
-      {/* 📝 Reviews */}
-      <h2>Recent Reviews</h2>
-      <div className="reviews-list">
-        {reviews.length === 0 ? (
-          <p>No recent reviews found.</p>
-        ) : (
-          reviews.slice(0, 10).map(r => (
-            <div key={r.id} className="review-card">
-              <strong>{r.username}</strong> reviewed <em>{r.gameTitle}</em>
-              {editingReviewId === r.id ? (
-                <>
-                  <label>
-                    Review:
-                    <textarea
-                      name="reviewText"
-                      value={editData.reviewText}
-                      onChange={handleChange}
-                    />
-                  </label>
-                  <div className="review-actions">
-                    <button onClick={() => handleSaveClick(r)}>💾 Save</button>
-                    <button onClick={handleCancelClick}>❌ Cancel</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p>Rating: {r.rating ?? 'N/A'}</p>
-                  <p>{r.reviewText ?? 'N/A'}</p>
-                  <div className="review-actions">
-                    <button onClick={() => handleEditClick(r)}>✏️ Edit</button>
+            {/* Scrollable list of users */}
+            <div className="table-body">
+              {users.map((u) => (
+                <div key={u.id} className="table-row">
+                  <div>{u.id}</div>
+                  <div>{u.username}</div>
+                  <div>{u.isAdmin ? "Admin" : "User"}</div>
+                  <div className="actions">
                     <button
-                      className="delete-btn"
-                      onClick={() => handleDeleteReview(r)}
+                      className={`button small ${u.isAdmin ? "demote" : "promote"}`}
+                      onClick={() => handleRoleToggle(u.id, u.isAdmin)}
                     >
-                      🗑️ Delete
+                      {u.isAdmin ? "Demote" : "Promote"}
+                    </button>
+                    <button
+                      className="button small neutral"
+                      onClick={() => handleResetPassword(u.id)}
+                    >
+                      Reset Password
                     </button>
                   </div>
-                </>
-              )}
+                </div>
+              ))}
             </div>
-          ))
-        )}
+          </div>
+        </section>
+
+
+        {/* === Recent Reviews === */}
+        <section className="admin-section">
+          <h2>Recent Reviews</h2>
+          <div className="card reviews-card">
+            {reviews.length === 0 ? (
+              <p>No recent reviews found.</p>
+            ) : (
+              reviews.slice(0, 10).map((r) => (
+                <div key={r.id} className="review-card">
+                  <strong>{r.username}</strong> reviewed <em>{r.gameTitle}</em>
+
+                  {editingReviewId === r.id ? (
+                    <>
+                      <label>
+                        Review:
+                        <textarea
+                          name="reviewText"
+                          value={editData.reviewText}
+                          onChange={handleChange}
+                        />
+                      </label>
+                      <div className="review-actions">
+                        <button
+                          className="button small"
+                          onClick={() => handleSaveClick(r)}
+                        >
+                          💾 Save
+                        </button>
+                        <button
+                          className="button small neutral"
+                          onClick={handleCancelClick}
+                        >
+                          ❌ Cancel
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p>Rating: {r.rating ?? "N/A"}</p>
+                      <p>{r.reviewText ?? "N/A"}</p>
+                      <div className="review-actions">
+                        <button
+                          className="button small"
+                          onClick={() => handleEditClick(r)}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          className="button small danger"
+                          onClick={() => handleDeleteReview(r)}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );
+
+
 }
 
 export default AdminPage;

@@ -12,51 +12,58 @@ const AchievementPage = () => {
     refreshAchievements();
   }, [refreshAchievements]);
 
-  return (
-    <div className="game-list-container">
-      {/* --- HEADER SECTION --- */}
-      <h2>🏅 Achievements</h2>
+return (
+  <div className="achievement-container">
+    {/* --- HEADER SECTION --- */}
+    <h2 className="achievement-title">🏅 Achievements</h2>
 
-      {/* --- TOP BUTTONS --- */}
-      <div className="top-buttons">
-        <button onClick={() => navigate("/gamelistpage")} className="logout-button">
-          ← Back to Games
-        </button>
-        <button onClick={refreshAchievements}>🔄 Refresh</button>
-      </div>
+    {/* --- TOP BUTTONS --- */}
+    <div className="top-buttons-achievement">
+      <button
+        onClick={() => navigate("/gamelistpage")}
+        className="logout-button-achievement button-achievement"
+      >
+        ← Back to Games
+      </button>
+      <button onClick={refreshAchievements} className="button-achievement">
+        🔄 Refresh
+      </button>
+    </div>
 
-      {/* --- STATUS MESSAGES --- */}
-      {loading && <p className="status-text">Loading achievements...</p>}
-      {error && <p className="status-text error-text">{error.message}</p>}
+    {/* --- STATUS MESSAGES --- */}
+    {loading && <p className="status-text-achievement">Loading achievements...</p>}
+    {error && (
+      <p className="status-text-achievement error-text-achievement">{error.message}</p>
+    )}
 
-      {/* --- ACHIEVEMENT LIST --- */}
-      <div className="game-list">
-        {achievements.length === 0 && !loading ? (
-          <p className="status-text">
-            You have no achievements yet. Start reviewing and completing games!
-          </p>
-        ) : (
-          achievements.map((a, index) => {
-            const label = achievementLabels[a.achievementType] || a.achievementType;
-            return (
-              <div key={index} className="game-item">
-                <div className="card-header">
-                  <div className="status-icon" title={label.title}>
-                    {label.icon}
-                  </div>
-                </div>
-
-                <div className="game-details">
-                  <h3>{label.title}</h3>
-                  <p>{label.description}</p>
+    {/* --- ACHIEVEMENT LIST --- */}
+    <div className="achievement-list">
+      {achievements.length === 0 && !loading ? (
+        <p className="status-text-achievement">
+          You have no achievements yet. Start reviewing and completing games!
+        </p>
+      ) : (
+        achievements.map((a, index) => {
+          const label = achievementLabels[a.achievementType] || a.achievementType;
+          return (
+            <div key={index} className="achievement-item">
+              <div className="card-header-achievement">
+                <div className="status-icon-achievement" title={label.title}>
+                  {label.icon}
                 </div>
               </div>
-            );
-          })
-        )}
-      </div>
+
+              <div className="achievement-details">
+                <h3 className="achievement-title-item">{label.title}</h3>
+                <p className="achievement-description">{label.description}</p>
+              </div>
+            </div>
+          );
+        })
+      )}
     </div>
-  );
+  </div>
+);
 };
 
 export default AchievementPage;

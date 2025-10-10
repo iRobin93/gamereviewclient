@@ -1,233 +1,244 @@
-/* === GLOBAL PAGE CONTAINER === */
-.add-game-container {
+/* === GLOBAL WRAPPER === */
+.page-wrapper-addgame {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #e9f2ff 0%, #f8f9fa 100%);
+  padding: 2rem 1rem;
+}
+
+/* === MAIN CONTAINER === */
+.add-game-container-addgame {
+  width: 100%;
   max-width: 1200px;
-  margin: 2rem auto;
-  padding: 1.5rem;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #222;
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
 }
 
-/* === HEADER === */
-.add-game-container h2 {
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-/* === BUTTONS === */
-.button {
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.95rem;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-
-.sort-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 1.5rem;
-}
-
-
-.button:hover {
-  background-color: #0056b3;
-  transform: scale(1.03);
-}
-
-.back-btn {
-  background-color: #6c757d;
-  margin-bottom: 1rem;
-}
-
-.back-btn:hover {
-  background-color: #5a6268;
-}
-
-/* === SEARCH TOGGLE === */
-.search-toggle {
-  display: flex;
-  justify-content: center;
-  gap: 0.6rem;
-  margin-bottom: 1rem;
-}
-
-.toggle-btn {
-  background-color: #e9ecef;
-  color: #333;
-  border: 1px solid #ccc;
-  padding: 0.6rem 1.2rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.toggle-btn.active {
-  background-color: #007bff;
-  color: #fff;
-  border-color: #007bff;
-}
-
-/* === SEARCH BAR === */
-.search-bar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.search-bar form {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6rem;
-  width: 100%;
-  max-width: 700px;
-}
-
-.search-bar input {
-  flex: 1;
-  padding: 0.8rem 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 1rem;
-  text-align: center;
-}
-
-.search-bar input:focus {
-  outline: none;
-  border-color: #007bff;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-}
-
-.search-bar button {
-  flex-shrink: 0;
-  padding: 0.8rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.2s ease;
-}
-
-.search-bar button:hover {
-  background-color: #0056b3;
-}
-
-/* === WARNING BOX === */
-.warning-box {
-  background-color: #fff3cd;
-  border: 1px solid #ffeeba;
-  color: #856404;
-  padding: 0.75rem 1rem;
-  border-radius: 6px;
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-/* === GAME LIST === */
-.game-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-/* === GAME ITEM === */
-.game-item {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 1rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.game-item:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
-}
-
-/* === GAME IMAGE === */
-.game-thumb {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 0.8rem;
-}
-
-/* === GAME INFO === */
-.game-info {
-  font-size: 0.95rem;
-  color: #333;
-  margin-bottom: 0.5rem;
-}
-
-.game-info strong {
-  display: block;
-  font-size: 1.2rem;
-  color: #222;
-  margin-bottom: 0.3rem;
-}
-
-/* === GAME ACTIONS === */
-.game-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.6rem;
-  flex-wrap: wrap; /* ensures buttons wrap gracefully on small screens */
+/* === INNER CONTENT === */
+.add-game-content-addgame {
+  padding: 2rem;
+  position: relative;
 }
 
 /* === LOADING OVERLAY === */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.85);
+.loading-overlay-addgame {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  font-weight: 600;
   font-size: 1.2rem;
-  color: #333;
-  z-index: 999;
+  color: #2d6cdf;
+  z-index: 5;
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 700px) {
-  .search-bar form {
+/* === TITLE & BUTTONS === */
+.title-addgame {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  color: #2c3e50;
+}
+
+.back-btn-addgame {
+  background: transparent;
+  border: none;
+  color: #2d6cdf;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s ease;
+}
+.back-btn-addgame:hover {
+  color: #1b4fb5;
+}
+
+/* === WARNING BOX === */
+.warning-box-addgame {
+  background: #fff7e6;
+  border: 1px solid #ffcc80;
+  color: #a66300;
+  padding: 0.8rem 1.2rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* === SEARCH TOGGLE === */
+.search-toggle-addgame {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* === SORT BUTTONS === */
+.sort-buttons-addgame {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* === BUTTONS (GLOBAL) === */
+.button-addgame {
+  background: #2d6cdf;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.button-addgame:hover {
+  background: #1b4fb5;
+}
+.button-addgame:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* === TOGGLE BUTTON === */
+.toggle-btn-addgame {
+  background: #f1f4fa;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.toggle-btn-addgame.active {
+  background: #2d6cdf;
+  color: #fff;
+}
+.toggle-btn-addgame:hover:not(.active) {
+  background: #e2e8f0;
+}
+
+/* === SEARCH BAR === */
+.search-bar-addgame {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+.search-bar-addgame form {
+  display: flex;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 500px;
+}
+.search-bar-addgame input {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 1rem;
+}
+.search-bar-addgame input:focus {
+  outline: 2px solid #2d6cdf;
+  border-color: transparent;
+}
+
+/* === GAME CARD GRID === */
+.game-card-grid-addgame {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+/* === GAME CARD === */
+.game-card-addgame {
+  background: #f9fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.game-card-addgame:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* === THUMBNAIL === */
+.game-thumb-addgame {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+
+/* === INFO === */
+.game-info-addgame {
+  flex-grow: 1;
+  padding: 0.8rem 1rem;
+}
+.game-title-addgame {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  color: #2c3e50;
+}
+.release-date-addgame {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin-bottom: 0.2rem;
+}
+.meta-addgame {
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+/* === CARD BUTTONS === */
+.card-buttons-addgame {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem 1rem;
+}
+
+/* === RESPONSIVE DESIGN === */
+@media (max-width: 768px) {
+  .add-game-content-addgame {
+    padding: 1.2rem;
+  }
+
+  .game-thumb-addgame {
+    height: 120px;
+  }
+
+  .game-card-grid-addgame {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .button-addgame,
+  .toggle-btn-addgame {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title-addgame {
+    font-size: 1.4rem;
+  }
+
+  .search-bar-addgame form {
     flex-direction: column;
-    max-width: 90%;
   }
 
-  .search-bar input {
-    width: 100%;
-    text-align: left;
-  }
-
-  .search-bar button {
-    width: 100%;
-  }
-
-  .game-actions {
+  .card-buttons-addgame {
     flex-direction: column;
-  }
-
-  .button {
-    width: 100%;
   }
 }

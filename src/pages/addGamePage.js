@@ -301,51 +301,64 @@ function AddGamePage() {
   };
 
   // ✅ UI for RAWG Games
-  if (activeSearch === 'rawG') {
-    return (
-      <div className="add-game-container"> {/* <-- same wrapper as GameListPage */}
-        <div className="add-game-content">
+// ✅ UI for RAWG Games
+// ✅ UI for RawG Games
+if (activeSearch === "rawG") {
+  return (
+    <div className="page-wrapper-addgame">
+      <div className="add-game-container-addgame">
+        <div className="add-game-content-addgame">
           {addGamePressed && (
-            <div className="loading-overlay">
+            <div className="loading-overlay-addgame">
               <p>Adding game, please wait...</p>
             </div>
           )}
 
-          <button className="button back-btn" onClick={() => navigate('/gamelistpage')}>
+          <button
+            className="button-addgame back-btn-addgame"
+            onClick={() => navigate("/gamelistpage")}
+          >
             ← Back
           </button>
-          <h2>Add a Game</h2>
+
+          <h2 className="title-addgame">Add a Game</h2>
 
           {moreGamesToDisplay && (
-            <div className="warning-box">
-              <strong>More games found. Search more narrowly for better results.</strong>
+            <div className="warning-box-addgame">
+              <strong>
+                More games found. Search more narrowly for better results.
+              </strong>
             </div>
           )}
 
-          <div className="search-toggle">
+          <div className="search-toggle-addgame">
             <button
-              className={`toggle-btn ${activeSearch === 'rawG' ? 'active' : ''}`}
-              onClick={() => setActiveSearch('rawG')}
+              className={`toggle-btn-addgame ${
+                activeSearch === "rawG" ? "active" : ""
+              }`}
+              onClick={() => setActiveSearch("rawG")}
             >
               RawG Games
             </button>
             <button
-              className={`toggle-btn ${activeSearch === 'gameReview' ? 'active' : ''}`}
+              className={`toggle-btn-addgame ${
+                activeSearch === "gameReview" ? "active" : ""
+              }`}
               onClick={() => {
-                setActiveSearch('gameReview');
+                setActiveSearch("gameReview");
                 setResults(games);
-                setSearchTerm('');
+                setSearchTerm("");
               }}
             >
               GameReview Games
             </button>
           </div>
 
-          <div className="search-bar">
+          <div className="search-bar-addgame">
             <form
               onSubmit={(e) => {
-                e.preventDefault(); // prevent page refresh
-                handleSearch();     // call your async search
+                e.preventDefault();
+                handleSearch();
               }}
             >
               <input
@@ -354,46 +367,66 @@ function AddGamePage() {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <button type="submit" className="button" disabled={loading}>
-                {loading ? 'Searching...' : 'Search'}
+              <button
+                type="submit"
+                className="button-addgame"
+                disabled={loading}
+              >
+                {loading ? "Searching..." : "Search"}
               </button>
             </form>
           </div>
 
-          <ul className="game-list">
+          {/* === CARD GRID FOR RAWG GAMES === */}
+          <div className="game-card-grid-addgame">
             {results.map((rawGGame) => (
-              <li key={rawGGame.id} className="game-item">
-                <img src={rawGGame.background_image} alt={rawGGame.name} className="game-thumb" />
-                <div className="game-info">
-                  <strong>{rawGGame.name}</strong>
-                  <div>
+              <div key={rawGGame.id} className="game-card-addgame">
+                <img
+                  src={rawGGame.background_image}
+                  alt={rawGGame.name}
+                  className="game-thumb-addgame"
+                />
+                <div className="game-info-addgame">
+                  <h3 className="game-title-addgame">{rawGGame.name}</h3>
+                  <p className="release-date-addgame">
                     {rawGGame.released
                       ? new Date(rawGGame.released).toLocaleDateString("no-NO")
                       : "Not available"}
-                  </div>
+                  </p>
                 </div>
-                <div className="game-actions">
+
+                <div className="card-buttons-addgame">
                   <button
-                    className="button"
+                    className="button-addgame"
                     onClick={async () => {
                       if (checkIfUserGameExistsFromRawG(rawGGame)) {
-                        window.alert(`Game ${rawGGame.name || rawGGame.title} already exists in your list`);
+                        window.alert(
+                          `Game ${rawGGame.name || rawGGame.title} already exists in your list`
+                        );
                         return;
                       }
                       setAddGamePressed(true);
                       try {
                         let gameObject = games.find(
-                          (g) => g.rawGId === rawGGame.id);
+                          (g) => g.rawGId === rawGGame.id
+                        );
                         const createGenreAndPlatforms = !gameObject;
                         if (!gameObject) {
                           const newGame = {
                             title: rawGGame.name || rawGGame.title,
-                            coverImageUrl: rawGGame.background_image || rawGGame.coverImageUrl,
-                            releaseDate: normalizeReleaseDate(rawGGame.released || rawGGame.releaseDate),
-                            rawGId: rawGGame.rawGId || (activeSearch === "rawG" ? rawGGame.id : null),
+                            coverImageUrl:
+                              rawGGame.background_image ||
+                              rawGGame.coverImageUrl,
+                            releaseDate: normalizeReleaseDate(
+                              rawGGame.released || rawGGame.releaseDate
+                            ),
+                            rawGId:
+                              rawGGame.rawGId ||
+                              (activeSearch === "rawG" ? rawGGame.id : null),
                           };
                           gameObject = await createGame(newGame);
                         }
+
                         const newUserGame = {
                           rating: undefined,
                           reviewed: false,
@@ -404,23 +437,36 @@ function AddGamePage() {
                         };
                         await postUserGameToDatabase(newUserGame);
                         setUserGames([...usergames, newUserGame]);
+
                         if (createGenreAndPlatforms) {
                           if (rawGGame.platforms) {
-                            await createGamePlatforms(rawGGame.platforms, gameObject.id);
-
+                            await createGamePlatforms(
+                              rawGGame.platforms,
+                              gameObject.id
+                            );
                           }
                           if (rawGGame.genres) {
-                            await createGameGenres(rawGGame.genres, gameObject.id);
+                            await createGameGenres(
+                              rawGGame.genres,
+                              gameObject.id
+                            );
                           }
-
                         } else {
-
-                          const newGameGenres = await getGameGenres(newUserGame.game_id);
-                          const newGamePlatforms = await getGamePlatforms(newUserGame.game_id)
-                          setGamePlatforms((prev) => [...prev, ...newGamePlatforms]);
-                          setGameGenres((prev) => [...prev, ...newGameGenres]);
+                          const newGameGenres = await getGameGenres(
+                            newUserGame.game_id
+                          );
+                          const newGamePlatforms = await getGamePlatforms(
+                            newUserGame.game_id
+                          );
+                          setGamePlatforms((prev) => [
+                            ...prev,
+                            ...newGamePlatforms,
+                          ]);
+                          setGameGenres((prev) => [
+                            ...prev,
+                            ...newGameGenres,
+                          ]);
                         }
-
 
                         navigate("/gamelistpage");
                       } catch (err) {
@@ -434,49 +480,65 @@ function AddGamePage() {
                     Add
                   </button>
                 </div>
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       </div>
-    );
+    </div>
+  );
+}
 
-  }
+// ✅ SAME ORDER + STRUCTURE for GameReview games
+return (
+  <div className="page-wrapper-addgame">
+    <div className="add-game-container-addgame">
+      <div className="add-game-content-addgame">
+        {addGamePressed && (
+          <div className="loading-overlay-addgame">
+            <p>Adding game, please wait...</p>
+          </div>
+        )}
 
-
-  // ✅ UI for GameReview Games
-  return (
-    <div className="add-game-container"> {/* same background wrapper */}
-      <div className="add-game-content">
-        <button className="button back-btn" onClick={() => navigate('/gamelistpage')}>
+        <button
+          className="button-addgame back-btn-addgame"
+          onClick={() => navigate("/gamelistpage")}
+        >
           ← Back
         </button>
-        <h2>Add a Game</h2>
 
-        <div className="search-toggle">
+        <h2 className="title-addgame">Add a Game</h2>
+
+        <div className="search-toggle-addgame">
           <button
-            className={`toggle-btn ${activeSearch === 'rawG' ? 'active' : ''}`}
+            className={`toggle-btn-addgame ${
+              activeSearch === "rawG" ? "active" : ""
+            }`}
             onClick={() => {
-              setActiveSearch('rawG');
+              setActiveSearch("rawG");
               setResults([]);
-              setSearchTerm('');
+              setSearchTerm("");
             }}
           >
             RawG Games
           </button>
           <button
-            className={`toggle-btn ${activeSearch === 'gameReview' ? 'active' : ''}`}
-            onClick={() => setActiveSearch('gameReview')}
+            className={`toggle-btn-addgame ${
+              activeSearch === "gameReview" ? "active" : ""
+            }`}
+            onClick={() => setActiveSearch("gameReview")}
           >
             GameReview Games
           </button>
         </div>
 
-        <div className="sort-buttons">
+        <div className="sort-buttons-addgame">
           {sortingOptions.map((sorting) => (
             <button
               key={sorting.title}
-              className={`toggle-btn ${activeSort === sorting.title ? 'active' : ''}`}
+              className={`toggle-btn-addgame ${
+                activeSort === sorting.title ? "active" : ""
+              }`}
               onClick={() => handleSort(sorting)}
             >
               {sorting.title}
@@ -484,60 +546,67 @@ function AddGamePage() {
           ))}
         </div>
 
-        <div className="search-bar">
+        <div className="search-bar-addgame">
           <form
             onSubmit={(e) => {
-              e.preventDefault(); // prevent page refresh
-              handleSearch();     // call your async search
+              e.preventDefault();
+              handleSearch();
             }}
           >
-
-
             <input
               type="text"
               placeholder="Search for a game..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-            <button type="submit" className="button" disabled={loading}>
-              {loading ? 'Searching...' : 'Search'}
+            <button
+              type="submit"
+              className="button-addgame"
+              disabled={loading}
+            >
+              {loading ? "Searching..." : "Search"}
             </button>
           </form>
         </div>
 
-        <ul className="game-list">
+        {/* === CARD GRID FOR GAMEREVIEW GAMES === */}
+        <div className="game-card-grid-addgame">
           {results.map((game) => (
-            <li key={game.id} className="game-item">
-              <img src={game.coverImageUrl} alt={game.title} className="game-thumb" />
-              <div className="game-info">
-                <strong>{game.title}</strong>
-                <div>
-                  Release Date:{" "}
+            <div key={game.id} className="game-card-addgame">
+              <img
+                src={game.coverImageUrl}
+                alt={game.title}
+                className="game-thumb-addgame"
+              />
+              <div className="game-info-addgame">
+                <h3 className="game-title-addgame">{game.title}</h3>
+                <p className="release-date-addgame">
                   {game.releaseDate
                     ? new Date(game.releaseDate).toLocaleDateString("no-NO")
                     : "Not available"}
-                </div>
-                <div>#Users: {game.userGameCount}</div>
-                <div>#Reviews: {game.reviewedCount}</div>
-                <div>
-                  Review Score:{" "}
+                </p>
+                <p className="meta-addgame">#Users: {game.userGameCount}</p>
+                <p className="meta-addgame">#Reviews: {game.reviewedCount}</p>
+                <p className="meta-addgame">
+                  Score:{" "}
                   {game.averageReviewScore
                     ? `${game.averageReviewScore.toFixed(1)} / 5.0`
                     : "Not reviewed"}
-                </div>
+                </p>
               </div>
 
-              <div className="game-actions">
+              <div className="card-buttons-addgame">
                 <button
-                  className="button"
+                  className="button-addgame"
                   onClick={async () => {
                     if (checkIfUserGameExists(game)) {
-                      window.alert(`Game ${game.name || game.title} already exists in your list`);
+                      window.alert(
+                        `Game ${game.name || game.title} already exists in your list`
+                      );
                       return;
                     }
                     setAddGamePressed(true);
                     try {
-
                       const newUserGame = {
                         rating: undefined,
                         reviewed: false,
@@ -548,11 +617,18 @@ function AddGamePage() {
                       };
                       await postUserGameToDatabase(newUserGame);
                       setUserGames([...usergames, newUserGame]);
-                      const newGameGenres = await getGameGenres(newUserGame.game_id);
-                      const newGamePlatforms = await getGamePlatforms(newUserGame.game_id)
-                      setGamePlatforms((prev) => [...prev, ...newGamePlatforms]);
-                      setGameGenres((prev) => [...prev, ...newGameGenres]);
 
+                      const newGameGenres = await getGameGenres(
+                        newUserGame.game_id
+                      );
+                      const newGamePlatforms = await getGamePlatforms(
+                        newUserGame.game_id
+                      );
+                      setGamePlatforms((prev) => [
+                        ...prev,
+                        ...newGamePlatforms,
+                      ]);
+                      setGameGenres((prev) => [...prev, ...newGameGenres]);
 
                       navigate("/gamelistpage");
                     } catch (err) {
@@ -567,7 +643,7 @@ function AddGamePage() {
                 </button>
 
                 <button
-                  className="button"
+                  className="button-addgame"
                   onClick={() =>
                     navigate(`/reviews/${game.id}`, {
                       state: { game, fromGameReview: true },
@@ -577,13 +653,13 @@ function AddGamePage() {
                   View Reviews
                 </button>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
     </div>
-  );
-
+  </div>
+);
 
 }
 
