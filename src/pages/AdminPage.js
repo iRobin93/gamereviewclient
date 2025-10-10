@@ -31,10 +31,9 @@ function AdminPage() {
   const loadRecentReviews = useCallback(async (usersList) => {
     try {
       const [data, gamesList] = await Promise.all([getAllUserGames(), getGames()]);
-      const reviewed = data.filter(g => g.reviewed);
+      const reviewed = data.filter(g => g.reviewed).sort((a, b) => 0);
 
       const enriched = reviewed
-        .sort((a, b) => (b.updated_at || b.id) - (a.updated_at || a.id))
         .map(r => ({
           ...r,
           username:

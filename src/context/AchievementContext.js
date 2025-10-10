@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { getAchievements } from '../api/achievementApi';
 import { useUser } from '../context/UserContext';
 
@@ -25,10 +25,6 @@ export function AchievementProvider({ children }) {
     }
   }, [user]);
 
-  // Initial load or when user changes
-  useEffect(() => {
-    refreshAchievements();
-  }, [refreshAchievements]);
 
   return (
     <AchievementContext.Provider value={{ achievements, loading, error, refreshAchievements }}>
