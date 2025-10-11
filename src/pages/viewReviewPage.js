@@ -223,7 +223,7 @@ useEffect(() => {
                 ))}
                 <span className="rating-text"> {review.rating}/5</span>
               </p>
-              <p>{review.reviewText}</p>
+              <p className="review-text">{review.reviewText}</p>
               {review.reviewedDate && (
                 <p className="review-date">
                   {new Date(review.reviewedDate).toLocaleDateString("en-GB")}

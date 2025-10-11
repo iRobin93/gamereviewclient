@@ -11,18 +11,22 @@
 }
 
 /* === BACK BUTTON === */
+
 .back-button {
-  background: none;
+  background: transparent;
   border: none;
-  color: #007bff;
-  font-size: 0.95rem;
+  color: #2d6cdf;
+  font-weight: 600;
   cursor: pointer;
-  margin-bottom: 1rem;
-  transition: color 0.2s ease;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
+
 .back-button:hover {
-  color: #0056b3;
-  text-decoration: underline;
+  color: #ffffff; /* stays visible */
 }
 
 /* === GAME HEADER === */
@@ -243,4 +247,9 @@ h3 {
   .reviews-list {
     max-height: 240px;
   }
+}
+
+.review-text {
+  white-space: pre-wrap; /* ✅ preserves line breaks and wraps text nicely */
+  word-break: break-word; /* ✅ prevents long words from overflowing */
 }

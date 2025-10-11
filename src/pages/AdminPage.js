@@ -4,6 +4,7 @@ import { getUsers, updateUserRole, resetUserPassword } from '../api/usersApi';
 import { getAllUserGames, putUserGameToDatabase } from '../api/userGamesApi';
 import { getGames } from '../api/gameApi';
 import { useNavigate } from 'react-router-dom';
+import { adminSyncFromRawGGenrePlatform } from '../api/adminApi';
 import '../css/adminPage.css';
 
 function AdminPage() {
@@ -13,6 +14,7 @@ function AdminPage() {
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [editData, setEditData] = useState({ rating: '', reviewText: '', status: '' });
   const navigate = useNavigate();
+  const [loadingSync, setLoadingSync] = useState(false);
 
   // 🧭 Load users
   const loadUsers = useCallback(async () => {
@@ -159,6 +161,29 @@ function AdminPage() {
     setEditData(prev => ({ ...prev, [name]: value }));
   };
 
+
+  const handleResync = async () => {
+    try {
+      setLoadingSync(true);
+
+
+      const res = await adminSyncFromRawGGenrePlatform();
+
+      if (res.status !== 200) {
+        alert(`❌ Sync failed: ${res.statusText}`);
+        return;
+      }
+
+
+      alert(`✅ ${ res.statusText + "  RAWG sync initiated successfully!"}`);
+    } catch (err) {
+      console.error(err);
+      alert("❌ An error occurred while syncing RAWG data.");
+    } finally {
+      setLoadingSync(false);
+    }
+  };
+
   // if (!user?.isAdmin) {
   //   return <div className="access-denied">Access denied — admins only.</div>;
   // }
@@ -173,6 +198,13 @@ function AdminPage() {
           </p>
           <button className="button secondary" onClick={() => navigate(-1)}>
             ← Back
+          </button>
+          <button
+            className="button primary"
+            onClick={handleResync}
+            disabled={loadingSync}
+          >
+            {loadingSync ? "Syncing..." : "🔄 Re-Sync RAWG Data"}
           </button>
         </header>
 
@@ -256,7 +288,7 @@ function AdminPage() {
                   ) : (
                     <>
                       <p>Rating: {r.rating ?? "N/A"}</p>
-                      <p>{r.reviewText ?? "N/A"}</p>
+                      <p className="review-text">{r.reviewText ?? "N/A"}</p>
                       <div className="review-actions">
                         <button
                           className="button small"

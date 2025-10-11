@@ -411,3 +411,8 @@
 .table-body {
   -webkit-overflow-scrolling: touch;
 }
+
+.review-text {
+  white-space: pre-wrap; /* ✅ preserves line breaks and wraps text nicely */
+  word-break: break-word; /* ✅ prevents long words from overflowing */
+}
