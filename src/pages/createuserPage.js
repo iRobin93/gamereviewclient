@@ -4,6 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { postUserToDatabase } from '../api/usersApi';
 import gameReviewLogo from "../images/gameReviewLogo.png";
 import { FaSpinner } from 'react-icons/fa';
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 function CreateUserPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -39,16 +42,28 @@ function CreateUserPage() {
         // Example logic — replace with actual API call or context logic
         try {
             await postUserToDatabase(userInfo);
+            // ✅ Success toast
+            toast.success("🎉 Account created successfully! Please verify your email before logging in.", {
+                position: "top-center",
+                autoClose: 5000,
+            });
 
         }
         catch (err) {
-            alert(err.message);
-            setAccountCreation(false);
+           
+            // ❌ Error toast
+            toast.error(`❌ ${err.response?.data || err.message || "Account creation failed."}`, {
+                position: "top-center",
+                autoClose: 5000,
+            });
+             setAccountCreation(false);
             return;
         }
-        setAccountCreation(false);
-        // Navigate back to login (optional)
-        navigate('/');
+        finally {
+            setAccountCreation(false);
+        }
+        navigate("/");
+
     };
 
     const styles = {
@@ -217,8 +232,6 @@ function CreateUserPage() {
             </p>
         </div>
     );
-
-
 }
 
 export default CreateUserPage;

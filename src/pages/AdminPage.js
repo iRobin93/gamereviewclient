@@ -197,46 +197,61 @@ function AdminPage() {
   //   return <div className="access-denied">Access denied — admins only.</div>;
   // }
 
-  return (
-    <div className="page-wrapper">
-      <div className="page-content admin-container">
-        <header className="page-header">
+return (
+  <div className="page-wrapper">
+    <div className="page-content admin-container">
+      {/* === HEADER === */}
+      <header className="page-header">
+        <div className="header-top">
           <h1>Admin Dashboard</h1>
-          <p>
-            Welcome, <span className="admin-username">{user.username}</span>
-          </p>
-          <button className="button secondary" onClick={() => navigate(-1)}>
-            ← Back
-          </button>
-          <button
-            className="button primary"
-            onClick={handleResync}
-            disabled={loadingSync}
-          >
-            {loadingSync ? "Syncing..." : "🔄 Re-Sync RAWG Data"}
-          </button>
-        </header>
+          <div className="header-actions">
+            <button className="button secondary" onClick={() => navigate(-1)}>
+              ← Back
+            </button>
+            <button
+              className="button primary"
+              onClick={handleResync}
+              disabled={loadingSync}
+            >
+              {loadingSync ? "🔄 Syncing..." : "Re-Sync RAWG Data"}
+            </button>
+          </div>
+        </div>
 
-        {/* === Manage Users === */}
-        <section className="admin-section">
-          <h2>Manage Users</h2>
+        <p>
+          Welcome, <span className="admin-username">{user.username}</span>
+        </p>
+      </header>
 
-          <div className="card table-card">
-            {/* Static header (always visible) */}
-            <div className="table-header">
-              <div>ID</div>
-              <div>Username</div>
-              <div>Role</div>
-              <div>Actions</div>
-            </div>
+      {/* === MANAGE USERS === */}
+      <section className="admin-section">
+        <h2>Manage Users</h2>
 
-            {/* Scrollable list of users */}
-            <div className="table-body">
-              {users.map((u) => (
+        <div className="card table-card">
+          {/* === Table Header === */}
+          <div className="table-header">
+            <div>ID</div>
+            <div>Username</div>
+            <div>Role</div>
+            <div>Verified</div>
+            <div>Actions</div>
+          </div>
+
+          {/* === Table Body === */}
+          <div className="table-body">
+            {users.length > 0 ? (
+              users.map((u) => (
                 <div key={u.id} className="table-row">
                   <div>{u.id}</div>
                   <div>{u.username}</div>
                   <div>{u.isAdmin ? "Admin" : "User"}</div>
+                  <div>
+                    {u.verified ? (
+                      <span className="status verified">✔️ Verified</span>
+                    ) : (
+                      <span className="status unverified">❌ Unverified</span>
+                    )}
+                  </div>
                   <div className="actions">
                     <button
                       className={`button small ${u.isAdmin ? "demote" : "promote"}`}
@@ -252,78 +267,83 @@ function AdminPage() {
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-
-        {/* === Recent Reviews === */}
-        <section className="admin-section">
-          <h2>Recent Reviews</h2>
-          <div className="card reviews-card">
-            {reviews.length === 0 ? (
-              <p>No recent reviews found.</p>
-            ) : (
-              reviews.slice(0, 10).map((r) => (
-                <div key={r.id} className="review-card">
-                  <strong>{r.username}</strong> reviewed <em>{r.gameTitle}</em>
-
-                  {editingReviewId === r.id ? (
-                    <>
-                      <label>
-                        Review:
-                        <textarea
-                          name="reviewText"
-                          value={editData.reviewText}
-                          onChange={handleChange}
-                        />
-                      </label>
-                      <div className="review-actions">
-                        <button
-                          className="button small"
-                          onClick={() => handleSaveClick(r)}
-                        >
-                          💾 Save
-                        </button>
-                        <button
-                          className="button small neutral"
-                          onClick={handleCancelClick}
-                        >
-                          ❌ Cancel
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <p>Rating: {r.rating ?? "N/A"}</p>
-                      <p className="review-text">{r.reviewText ?? "N/A"}</p>
-                      <div className="review-actions">
-                        <button
-                          className="button small"
-                          onClick={() => handleEditClick(r)}
-                        >
-                          ✏️ Edit
-                        </button>
-                        <button
-                          className="button small danger"
-                          onClick={() => handleDeleteReview(r)}
-                        >
-                          🗑️ Delete
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
               ))
+            ) : (
+              <div className="empty-state">
+                <p>No users found.</p>
+              </div>
             )}
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {/* === RECENT REVIEWS === */}
+      <section className="admin-section">
+        <h2>Recent Reviews</h2>
+
+        <div className="card reviews-card">
+          {reviews.length === 0 ? (
+            <p>No recent reviews found.</p>
+          ) : (
+            reviews.slice(0, 10).map((r) => (
+              <div key={r.id} className="review-card">
+                <strong>{r.username}</strong> reviewed{" "}
+                <em>{r.gameTitle}</em>
+
+                {editingReviewId === r.id ? (
+                  <>
+                    <label>
+                      Review:
+                      <textarea
+                        name="reviewText"
+                        value={editData.reviewText}
+                        onChange={handleChange}
+                      />
+                    </label>
+                    <div className="review-actions">
+                      <button
+                        className="button small"
+                        onClick={() => handleSaveClick(r)}
+                      >
+                        💾 Save
+                      </button>
+                      <button
+                        className="button small neutral"
+                        onClick={handleCancelClick}
+                      >
+                        ❌ Cancel
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p>Rating: {r.rating ?? "N/A"}</p>
+                    <p className="review-text">{r.reviewText ?? "N/A"}</p>
+                    <div className="review-actions">
+                      <button
+                        className="button small"
+                        onClick={() => handleEditClick(r)}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        className="button small danger"
+                        onClick={() => handleDeleteReview(r)}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </section>
     </div>
-  );
-
-
+  </div>
+);
 }
+
 
 export default AdminPage;

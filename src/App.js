@@ -406,7 +406,6 @@ function LoginPage() {
           Create User
         </Link>
       </div>
-      <ToastContainer position="top-right" autoClose={3000} />
     </div>
 
   );
@@ -424,6 +423,7 @@ function App() {
                   <UserGameProvider>
                     <GameProvider>
                       <Router>
+                        <ToastContainer position="top-center" autoClose={4000} theme="colored" />
                         <Routes>
                           <Route path="/" element={<LoginPage />} />
                           <Route path="/gamelistpage" element={<GameListPage />} />
@@ -433,6 +433,7 @@ function App() {
                           <Route path="/createuserpage" element={<CreateUserPage />} />
                           <Route path="/reviews/:gameId" element={<ViewReviewPage />} />
                           <Route path="/adminpage" element={<AdminPage />} />
+                          
                         </Routes>
                       </Router>
                     </GameProvider>
