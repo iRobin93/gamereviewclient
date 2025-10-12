@@ -36,9 +36,9 @@ function AddGamePage() {
   const apiKey = "b1a02be62e9140459f53df733ff56c1e"; // Ideally from .env
 
   const sortingOptions = [
-    { title: 'Reviewed Count', key: 'reviewedCount' },
-    { title: 'People Has Game', key: 'userGameCount' },
-    { title: 'Average Review Score', key: 'averageReviewScore' },
+    { title: 'Sort by #Reviews', key: 'reviewedCount' },
+    { title: 'Sort by #Users', key: 'userGameCount' },
+    { title: 'Sort by Score', key: 'averageReviewScore' },
   ];
 
 
@@ -301,9 +301,193 @@ function AddGamePage() {
   };
 
   // ✅ UI for RAWG Games
-// ✅ UI for RAWG Games
-// ✅ UI for RawG Games
-if (activeSearch === "rawG") {
+  // ✅ UI for RAWG Games
+  // ✅ UI for RawG Games
+  if (activeSearch === "rawG") {
+    return (
+      <div className="page-wrapper-addgame">
+        <div className="add-game-container-addgame">
+          <div className="add-game-content-addgame">
+            {addGamePressed && (
+              <div className="loading-overlay-addgame">
+                <p>Adding game, please wait...</p>
+              </div>
+            )}
+
+            <button
+              className="button-addgame back-btn-addgame"
+              onClick={() => navigate("/gamelistpage")}
+            >
+              ← Back
+            </button>
+
+            <h2 className="title-addgame">Add a Game</h2>
+
+            {moreGamesToDisplay && (
+              <div className="warning-box-addgame">
+                <strong>
+                  More games found. Search more narrowly for better results.
+                </strong>
+              </div>
+            )}
+
+            <div className="search-toggle-addgame">
+              <button
+                className={`toggle-btn-addgame ${activeSearch === "rawG" ? "active" : ""
+                  }`}
+                onClick={() => setActiveSearch("rawG")}
+              >
+                RawG Games
+              </button>
+              <button
+                className={`toggle-btn-addgame ${activeSearch === "gameReview" ? "active" : ""
+                  }`}
+                onClick={() => {
+                  setActiveSearch("gameReview");
+                  setResults(games);
+                  setSearchTerm("");
+                }}
+              >
+                GameReview Games
+              </button>
+            </div>
+
+            <div className="search-bar-addgame">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSearch();
+                }}
+              >
+                <input
+                  type="text"
+                  placeholder="Search for a game..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="button-addgame"
+                  disabled={loading}
+                >
+                  {loading ? "Searching..." : "Search"}
+                </button>
+              </form>
+            </div>
+
+            {/* === CARD GRID FOR RAWG GAMES === */}
+            <div className="game-card-grid-addgame">
+              {results.map((rawGGame) => (
+                <div key={rawGGame.id} className="game-card-addgame">
+                  <img
+                    src={rawGGame.background_image}
+                    alt={rawGGame.name}
+                    className="game-thumb-addgame"
+                  />
+                  <div className="game-info-addgame">
+                    <h3 className="game-title-addgame">{rawGGame.name}</h3>
+                    <p className="release-date-addgame">
+                      {rawGGame.released
+                        ? new Date(rawGGame.released).toLocaleDateString("no-NO")
+                        : "Not available"}
+                    </p>
+                  </div>
+
+                  <div className="card-buttons-addgame">
+                    <button
+                      className="button-addgame"
+                      onClick={async () => {
+                        if (checkIfUserGameExistsFromRawG(rawGGame)) {
+                          window.alert(
+                            `Game ${rawGGame.name || rawGGame.title} already exists in your list`
+                          );
+                          return;
+                        }
+                        setAddGamePressed(true);
+                        try {
+                          let gameObject = games.find(
+                            (g) => g.rawGId === rawGGame.id
+                          );
+                          const createGenreAndPlatforms = !gameObject;
+                          if (!gameObject) {
+                            const newGame = {
+                              title: rawGGame.name || rawGGame.title,
+                              coverImageUrl:
+                                rawGGame.background_image ||
+                                rawGGame.coverImageUrl,
+                              releaseDate: normalizeReleaseDate(
+                                rawGGame.released || rawGGame.releaseDate
+                              ),
+                              rawGId:
+                                rawGGame.rawGId ||
+                                (activeSearch === "rawG" ? rawGGame.id : null),
+                            };
+                            gameObject = await createGame(newGame);
+                          }
+
+                          const newUserGame = {
+                            rating: undefined,
+                            reviewed: false,
+                            reviewText: "",
+                            status: "NotStarted",
+                            game_id: gameObject.id,
+                            user_id: user.id,
+                          };
+                          await postUserGameToDatabase(newUserGame);
+                          setUserGames([...usergames, newUserGame]);
+
+                          if (createGenreAndPlatforms) {
+                            if (rawGGame.platforms) {
+                              await createGamePlatforms(
+                                rawGGame.platforms,
+                                gameObject.id
+                              );
+                            }
+                            if (rawGGame.genres) {
+                              await createGameGenres(
+                                rawGGame.genres,
+                                gameObject.id
+                              );
+                            }
+                          } else {
+                            const newGameGenres = await getGameGenres(
+                              newUserGame.game_id
+                            );
+                            const newGamePlatforms = await getGamePlatforms(
+                              newUserGame.game_id
+                            );
+                            setGamePlatforms((prev) => [
+                              ...prev,
+                              ...newGamePlatforms,
+                            ]);
+                            setGameGenres((prev) => [
+                              ...prev,
+                              ...newGameGenres,
+                            ]);
+                          }
+
+                          navigate("/gamelistpage");
+                        } catch (err) {
+                          console.error("❌ Failed to add game:", err);
+                          window.alert("Failed to add game. Please try again.");
+                        } finally {
+                          setAddGamePressed(false);
+                        }
+                      }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ SAME ORDER + STRUCTURE for GameReview games
   return (
     <div className="page-wrapper-addgame">
       <div className="add-game-container-addgame">
@@ -323,35 +507,38 @@ if (activeSearch === "rawG") {
 
           <h2 className="title-addgame">Add a Game</h2>
 
-          {moreGamesToDisplay && (
-            <div className="warning-box-addgame">
-              <strong>
-                More games found. Search more narrowly for better results.
-              </strong>
-            </div>
-          )}
-
           <div className="search-toggle-addgame">
             <button
-              className={`toggle-btn-addgame ${
-                activeSearch === "rawG" ? "active" : ""
-              }`}
-              onClick={() => setActiveSearch("rawG")}
+              className={`toggle-btn-addgame ${activeSearch === "rawG" ? "active" : ""
+                }`}
+              onClick={() => {
+                setActiveSearch("rawG");
+                setResults([]);
+                setSearchTerm("");
+              }}
             >
               RawG Games
             </button>
             <button
-              className={`toggle-btn-addgame ${
-                activeSearch === "gameReview" ? "active" : ""
-              }`}
-              onClick={() => {
-                setActiveSearch("gameReview");
-                setResults(games);
-                setSearchTerm("");
-              }}
+              className={`toggle-btn-addgame ${activeSearch === "gameReview" ? "active" : ""
+                }`}
+              onClick={() => setActiveSearch("gameReview")}
             >
               GameReview Games
             </button>
+          </div>
+
+          <div className="sort-buttons-addgame">
+            {sortingOptions.map((sorting) => (
+              <button
+                key={sorting.title}
+                className={`toggle-btn-addgame ${activeSort === sorting.title ? "active" : ""
+                  }`}
+                onClick={() => handleSort(sorting)}
+              >
+                {sorting.title}
+              </button>
+            ))}
           </div>
 
           <div className="search-bar-addgame">
@@ -377,21 +564,35 @@ if (activeSearch === "rawG") {
             </form>
           </div>
 
-          {/* === CARD GRID FOR RAWG GAMES === */}
+          {/* === CARD GRID FOR GAMEREVIEW GAMES === */}
           <div className="game-card-grid-addgame">
-            {results.map((rawGGame) => (
-              <div key={rawGGame.id} className="game-card-addgame">
+            {results.map((game) => (
+              <div key={game.id} className="game-card-addgame">
                 <img
-                  src={rawGGame.background_image}
-                  alt={rawGGame.name}
+                  src={game.coverImageUrl}
+                  alt={game.title}
                   className="game-thumb-addgame"
                 />
                 <div className="game-info-addgame">
-                  <h3 className="game-title-addgame">{rawGGame.name}</h3>
+                  <h3 className="game-title-addgame">{game.title}</h3>
                   <p className="release-date-addgame">
-                    {rawGGame.released
-                      ? new Date(rawGGame.released).toLocaleDateString("no-NO")
+                    {game.releaseDate
+                      ? new Date(game.releaseDate).toLocaleDateString("no-NO")
                       : "Not available"}
+                  </p>
+                  <p className="meta-addgame">#Users: {game.userGameCount}</p>
+                  <p className="meta-addgame">#Reviews: {game.reviewedCount}</p>
+                  <p className="meta-addgame">
+                    Avg Score:{" "}
+                    {game.averageReviewScore?.toFixed(1) ?? "0"} / 5.0{" "}
+                    {Array.from({ length: 5 }, (_, i) => (
+                      <span key={i} className="star">
+                        {i <
+                          Math.round(game.averageReviewScore ?? 0)
+                          ? "★"
+                          : "☆"}
+                      </span>
+                    ))}
                   </p>
                 </div>
 
@@ -399,74 +600,36 @@ if (activeSearch === "rawG") {
                   <button
                     className="button-addgame"
                     onClick={async () => {
-                      if (checkIfUserGameExistsFromRawG(rawGGame)) {
+                      if (checkIfUserGameExists(game)) {
                         window.alert(
-                          `Game ${rawGGame.name || rawGGame.title} already exists in your list`
+                          `Game ${game.name || game.title} already exists in your list`
                         );
                         return;
                       }
                       setAddGamePressed(true);
                       try {
-                        let gameObject = games.find(
-                          (g) => g.rawGId === rawGGame.id
-                        );
-                        const createGenreAndPlatforms = !gameObject;
-                        if (!gameObject) {
-                          const newGame = {
-                            title: rawGGame.name || rawGGame.title,
-                            coverImageUrl:
-                              rawGGame.background_image ||
-                              rawGGame.coverImageUrl,
-                            releaseDate: normalizeReleaseDate(
-                              rawGGame.released || rawGGame.releaseDate
-                            ),
-                            rawGId:
-                              rawGGame.rawGId ||
-                              (activeSearch === "rawG" ? rawGGame.id : null),
-                          };
-                          gameObject = await createGame(newGame);
-                        }
-
                         const newUserGame = {
                           rating: undefined,
                           reviewed: false,
                           reviewText: "",
                           status: "NotStarted",
-                          game_id: gameObject.id,
+                          game_id: game.id,
                           user_id: user.id,
                         };
                         await postUserGameToDatabase(newUserGame);
                         setUserGames([...usergames, newUserGame]);
 
-                        if (createGenreAndPlatforms) {
-                          if (rawGGame.platforms) {
-                            await createGamePlatforms(
-                              rawGGame.platforms,
-                              gameObject.id
-                            );
-                          }
-                          if (rawGGame.genres) {
-                            await createGameGenres(
-                              rawGGame.genres,
-                              gameObject.id
-                            );
-                          }
-                        } else {
-                          const newGameGenres = await getGameGenres(
-                            newUserGame.game_id
-                          );
-                          const newGamePlatforms = await getGamePlatforms(
-                            newUserGame.game_id
-                          );
-                          setGamePlatforms((prev) => [
-                            ...prev,
-                            ...newGamePlatforms,
-                          ]);
-                          setGameGenres((prev) => [
-                            ...prev,
-                            ...newGameGenres,
-                          ]);
-                        }
+                        const newGameGenres = await getGameGenres(
+                          newUserGame.game_id
+                        );
+                        const newGamePlatforms = await getGamePlatforms(
+                          newUserGame.game_id
+                        );
+                        setGamePlatforms((prev) => [
+                          ...prev,
+                          ...newGamePlatforms,
+                        ]);
+                        setGameGenres((prev) => [...prev, ...newGameGenres]);
 
                         navigate("/gamelistpage");
                       } catch (err) {
@@ -479,6 +642,17 @@ if (activeSearch === "rawG") {
                   >
                     Add
                   </button>
+
+                  <button
+                    className="button-addgame"
+                    onClick={() =>
+                      navigate(`/reviews/${game.id}`, {
+                        state: { game, fromGameReview: true },
+                      })
+                    }
+                  >
+                    View Reviews
+                  </button>
                 </div>
               </div>
             ))}
@@ -487,179 +661,6 @@ if (activeSearch === "rawG") {
       </div>
     </div>
   );
-}
-
-// ✅ SAME ORDER + STRUCTURE for GameReview games
-return (
-  <div className="page-wrapper-addgame">
-    <div className="add-game-container-addgame">
-      <div className="add-game-content-addgame">
-        {addGamePressed && (
-          <div className="loading-overlay-addgame">
-            <p>Adding game, please wait...</p>
-          </div>
-        )}
-
-        <button
-          className="button-addgame back-btn-addgame"
-          onClick={() => navigate("/gamelistpage")}
-        >
-          ← Back
-        </button>
-
-        <h2 className="title-addgame">Add a Game</h2>
-
-        <div className="search-toggle-addgame">
-          <button
-            className={`toggle-btn-addgame ${
-              activeSearch === "rawG" ? "active" : ""
-            }`}
-            onClick={() => {
-              setActiveSearch("rawG");
-              setResults([]);
-              setSearchTerm("");
-            }}
-          >
-            RawG Games
-          </button>
-          <button
-            className={`toggle-btn-addgame ${
-              activeSearch === "gameReview" ? "active" : ""
-            }`}
-            onClick={() => setActiveSearch("gameReview")}
-          >
-            GameReview Games
-          </button>
-        </div>
-
-        <div className="sort-buttons-addgame">
-          {sortingOptions.map((sorting) => (
-            <button
-              key={sorting.title}
-              className={`toggle-btn-addgame ${
-                activeSort === sorting.title ? "active" : ""
-              }`}
-              onClick={() => handleSort(sorting)}
-            >
-              {sorting.title}
-            </button>
-          ))}
-        </div>
-
-        <div className="search-bar-addgame">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSearch();
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Search for a game..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="button-addgame"
-              disabled={loading}
-            >
-              {loading ? "Searching..." : "Search"}
-            </button>
-          </form>
-        </div>
-
-        {/* === CARD GRID FOR GAMEREVIEW GAMES === */}
-        <div className="game-card-grid-addgame">
-          {results.map((game) => (
-            <div key={game.id} className="game-card-addgame">
-              <img
-                src={game.coverImageUrl}
-                alt={game.title}
-                className="game-thumb-addgame"
-              />
-              <div className="game-info-addgame">
-                <h3 className="game-title-addgame">{game.title}</h3>
-                <p className="release-date-addgame">
-                  {game.releaseDate
-                    ? new Date(game.releaseDate).toLocaleDateString("no-NO")
-                    : "Not available"}
-                </p>
-                <p className="meta-addgame">#Users: {game.userGameCount}</p>
-                <p className="meta-addgame">#Reviews: {game.reviewedCount}</p>
-                <p className="meta-addgame">
-                  Score:{" "}
-                  {game.averageReviewScore
-                    ? `${game.averageReviewScore.toFixed(1)} / 5.0`
-                    : "Not reviewed"}
-                </p>
-              </div>
-
-              <div className="card-buttons-addgame">
-                <button
-                  className="button-addgame"
-                  onClick={async () => {
-                    if (checkIfUserGameExists(game)) {
-                      window.alert(
-                        `Game ${game.name || game.title} already exists in your list`
-                      );
-                      return;
-                    }
-                    setAddGamePressed(true);
-                    try {
-                      const newUserGame = {
-                        rating: undefined,
-                        reviewed: false,
-                        reviewText: "",
-                        status: "NotStarted",
-                        game_id: game.id,
-                        user_id: user.id,
-                      };
-                      await postUserGameToDatabase(newUserGame);
-                      setUserGames([...usergames, newUserGame]);
-
-                      const newGameGenres = await getGameGenres(
-                        newUserGame.game_id
-                      );
-                      const newGamePlatforms = await getGamePlatforms(
-                        newUserGame.game_id
-                      );
-                      setGamePlatforms((prev) => [
-                        ...prev,
-                        ...newGamePlatforms,
-                      ]);
-                      setGameGenres((prev) => [...prev, ...newGameGenres]);
-
-                      navigate("/gamelistpage");
-                    } catch (err) {
-                      console.error("❌ Failed to add game:", err);
-                      window.alert("Failed to add game. Please try again.");
-                    } finally {
-                      setAddGamePressed(false);
-                    }
-                  }}
-                >
-                  Add
-                </button>
-
-                <button
-                  className="button-addgame"
-                  onClick={() =>
-                    navigate(`/reviews/${game.id}`, {
-                      state: { game, fromGameReview: true },
-                    })
-                  }
-                >
-                  View Reviews
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-);
 
 }
 

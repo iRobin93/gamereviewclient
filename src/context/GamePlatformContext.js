@@ -4,13 +4,12 @@ const GamePlatformContext = createContext();
 
 export function GamePlatformProvider({ children }) {
   const [gameplatforms, setGamePlatforms] = useState([]);
-  const [gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh] = useState(false);
 
 
 
 
   return (
-    <GamePlatformContext.Provider value={{ gameplatforms, setGamePlatforms , gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh}}>
+    <GamePlatformContext.Provider value={{ gameplatforms, setGamePlatforms}}>
       {children}
     </GamePlatformContext.Provider>
   );

@@ -4,9 +4,8 @@ const UserGameContext = createContext();
 
 export function UserGameProvider({ children }) {
   const [usergames, setUserGames] = useState([]);
-  const [usergamesNeedRefresh, setUsergamesNeedRefresh] = useState(false);
   return (
-    <UserGameContext.Provider value={{ usergames, setUserGames, usergamesNeedRefresh, setUsergamesNeedRefresh }}>
+    <UserGameContext.Provider value={{ usergames, setUserGames }}>
       {children}
     </UserGameContext.Provider>
   );

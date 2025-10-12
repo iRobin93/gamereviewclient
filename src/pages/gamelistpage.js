@@ -7,7 +7,6 @@ import { useGames } from '../context/GameContext';
 import { useUserGames } from '../context/UserGameContext';
 import { useGameGenres } from '../context/GameGenreContext';
 import { useGamePlatforms } from '../context/GamePlatformContext'
-import { fetchGamePlatforms, fetchGameGenres, fetchUserGames } from '../App';
 import { useGenres } from '../context/GenreContext';
 import { usePlatforms } from '../context/PlatformContext'
 import { deleteUserGameFromDatabase } from '../api/userGamesApi'
@@ -21,9 +20,9 @@ function GameListPage() {
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
   const { games } = useGames();
-  const { usergames, setUserGames, setUsergamesNeedRefresh, usergamesNeedRefresh } = useUserGames();
+  const { usergames, setUserGames } = useUserGames();
   const { gamegenres, setGameGenres } = useGameGenres();
-  const { gameplatforms, gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh, setGamePlatforms } = useGamePlatforms();
+  const { gameplatforms, setGamePlatforms } = useGamePlatforms();
   const [search, setSearch] = useState('');
   const dropdownRef = useRef(null);
   const { genres } = useGenres();
@@ -44,29 +43,7 @@ function GameListPage() {
     }
   }, [user, navigate]);
 
-  useEffect(() => {
-    if (!usergamesNeedRefresh) return;
-    const refreshUserGames = async () => {
-      const updatedUserGames = await fetchUserGames(user.id, setUserGames);
-      setUserGames(updatedUserGames);
 
-      setUsergamesNeedRefresh(false);
-    };
-
-    refreshUserGames();
-  }, [usergamesNeedRefresh, setUsergamesNeedRefresh, setUserGames, user]);
-
-
-  useEffect(() => {
-    if (!gamePlatformsNeedRefresh) return;
-    const refresh = async () => {
-      await fetchGamePlatforms(usergames, setGamePlatforms);
-      await fetchGameGenres(usergames, setGameGenres);
-      setGamePlatformsNeedRefresh(false);
-    };
-
-    refresh();
-  }, [gamePlatformsNeedRefresh, setGamePlatformsNeedRefresh, usergames, setGamePlatforms, setGameGenres]);
 
 
   useEffect(() => {
@@ -493,6 +470,13 @@ function GameListPage() {
                   </div>
                 </div>
               )}
+              <p>
+                {mergedGame_UserGame.status === "Finished"
+                  ? "Finished"
+                  : mergedGame_UserGame.status === "InProgress"
+                    ? "In Progress"
+                    : "Not Started"}
+              </p>
 
               {/* Favorite Button */}
               <button

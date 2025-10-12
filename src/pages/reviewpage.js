@@ -9,7 +9,7 @@ import '../css/reviewPage.css';
 function ReviewPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { usergames, setUsergamesNeedRefresh } = useUserGames();
+  const { usergames, setUserGames } = useUserGames();
   const { games, setGames } = useGames();
 
   const usergame = usergames.find(u => u.id === parseInt(id));
@@ -38,19 +38,15 @@ function ReviewPage() {
 
   const handleSave = async () => {
     try {
-      const updatedUserGame = {
-        reviewText,
-        rating,
-        reviewed: true,
-        reviewedDate: new Date().toISOString(),
-        status: usergame.status,
-        user_id: usergame.user_id,
-        game_id: usergame.game_id,
-      };
+      usergame.reviewed = true; // Mark as reviewed
+      usergame.reviewedDate = new Date().toISOString(); // Update reviewed date
+      usergame.reviewText = reviewText; // Update review text
+      usergame.rating = rating; // Update rating
 
-      await putUserGameReview(usergame.id, updatedUserGame);
+
+      await putUserGameReview(usergame.id, usergame);
       fetchGame(setGames, games, usergame.game_id);
-      setUsergamesNeedRefresh(true);
+      setUserGames(prevUsergames => prevUsergames.map(ug => ug.id === usergame.id ? usergame : ug));
       navigate('/gamelistpage');
     } catch (error) {
       console.error('❌ Failed to save review:', error);
