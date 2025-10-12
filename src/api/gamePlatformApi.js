@@ -9,8 +9,8 @@ export const getGamePlatforms = async (id) => {
 
 export const postGamePlatformToDatabase = async (newGamePlatform) => {
 
-    await api.post(`/GamePlatform`, newGamePlatform);
-  
+    const response = await api.post(`/GamePlatform`, newGamePlatform);
+    return response.data;
 };
 
 export const deleteGamePlatformFromDatabase = async (id) => {

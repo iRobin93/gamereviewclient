@@ -11,7 +11,6 @@ import { postUserGameToDatabase } from '../api/userGamesApi';
 import { postGameToDatabase } from '../api/gameApi';
 import { getGamePlatforms, postGamePlatformToDatabase } from '../api/gamePlatformApi';
 import { getGameGenres, postGameGenreToDatabase } from '../api/gameGenresApi';
-import { postOneRawGPlatformsToDatabase } from '../api/platformApi';
 import "../css/addgamepage.css"
 import axios from 'axios';
 
@@ -29,7 +28,7 @@ function AddGamePage() {
   const { games, setGames } = useGames();
   const { usergames, setUserGames } = useUserGames();
   const { gameplatforms, setGamePlatforms } = useGamePlatforms();
-  const { platforms, setPlatforms } = usePlatforms();
+  const { platforms } = usePlatforms();
   const { genres } = useGenres();
   const { gamegenres, setGameGenres } = useGameGenres();
 
@@ -95,15 +94,6 @@ function AddGamePage() {
     );
   };
 
-
-  // ✅ Create new GameGenres
-  const getNewGameGenreId = () => {
-    const ids = gamegenres.map((g) => g.id);
-    let id = 1;
-    while (ids.includes(id)) id++;
-    return id;
-  };
-
   const createGameGenres = async (genreArray, gameId) => {
     const newGameGenres = [];
 
@@ -136,7 +126,6 @@ function AddGamePage() {
       if (alreadyExists) continue;
 
       newGameGenres.push({
-        id: getNewGameGenreId(),
         game_id: gameId,
         genre_id: genreId,
       });
@@ -144,18 +133,16 @@ function AddGamePage() {
 
     if (newGameGenres.length === 0) return;
 
-    setGameGenres((prev) => [...prev, ...newGameGenres]);
-    for (const g of newGameGenres) await postGameGenreToDatabase(g);
+    for (const gg of newGameGenres) {
+      try {
+        const savedGG = await postGameGenreToDatabase(gg);
+        // Update local state with the returned ID from backend
+        setGameGenres((prev) => [...prev, savedGG]);
+      } catch (err) {
+        console.error("❌ Failed to create GameGenre:", err);
+      }
+    }
   };
-
-  // ✅ Create new GamePlatforms
-  const getNewGamePlatformId = () => {
-    const ids = gameplatforms.map((g) => g.id);
-    let id = 1;
-    while (ids.includes(id)) id++;
-    return id;
-  };
-
 
   const createGamePlatforms = async (rawGArrayOfPlatforms, gameId) => {
     const newGamePlatforms = [];
@@ -185,18 +172,7 @@ function AddGamePage() {
       );
 
       if (!platform) {
-        try {
-          const newPlatform = {
-            rawGId: rawPlatformId,
-            platformName: rawPlatformName,
-          };
-          const savedPlatform = await postOneRawGPlatformsToDatabase(newPlatform);
-          platform = savedPlatform;
-          setPlatforms((prev) => [...prev, savedPlatform]);
-        } catch (err) {
-          console.error("❌ Failed to create platform:", err);
-          continue;
-        }
+        alert(`Platform "${rawPlatformName}" not found in local DB`);
       }
 
       const alreadyExists = gameplatforms.some(
@@ -205,7 +181,6 @@ function AddGamePage() {
       if (alreadyExists) continue;
 
       newGamePlatforms.push({
-        id: getNewGamePlatformId(),
         game_id: gameId,
         platform_id: platform.id,
       });
@@ -213,8 +188,15 @@ function AddGamePage() {
 
     if (newGamePlatforms.length === 0) return;
 
-    setGamePlatforms((prev) => [...prev, ...newGamePlatforms]);
-    for (const gp of newGamePlatforms) await postGamePlatformToDatabase(gp);
+    for (const gp of newGamePlatforms) {
+      try {
+        const savedGP = await postGamePlatformToDatabase(gp);
+        // Update local state with the returned ID from backend
+        setGamePlatforms((prev) => [...prev, savedGP]);
+      } catch (err) {
+        console.error("❌ Failed to create GamePlatform:", err);
+      }
+    }
   };
 
   // 🔍 Search Handler

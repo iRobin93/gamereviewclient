@@ -31,8 +31,8 @@ import { getGames } from './api/gameApi';
 import { getGame } from './api/gameApi';
 import { getGameGenres } from './api/gameGenresApi';
 import { getGamePlatforms } from './api/gamePlatformApi';
-import { getGenres, getGenresFromRawG, postRawGGenresToDatabase } from './api/genreApi';
-import { getPlatforms, getPlatformsFromRawG, postRawGPlatformsToDatabase } from './api/platformApi';
+import { getGenres } from './api/genreApi';
+import { getPlatforms } from './api/platformApi';
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gameReviewLogo from "./images/gameReviewLogo.png";
@@ -109,6 +109,25 @@ export const fetchGamePlatforms = async (userGames, setGamePlatforms, currentGam
     console.error('Failed to fetch GamePlatforms:', error);
   }
 };
+export const fetchPlatforms = async (setPlatforms) => {
+  try {
+    //old await fetchPlatformsFromRawG();
+    const Platforms = await getPlatforms();
+    setPlatforms(Platforms);
+  } catch (error) {
+    console.error('Failed to fetch Platforms:', error);
+  }
+};
+
+export const fetchGenres = async (setGenres) => {
+  try {
+    // old await fetchGenresFromRawG();
+    const Genres = await getGenres();
+    setGenres(Genres);
+  } catch (error) {
+    console.error('Failed to fetch Genres:', error);
+  }
+};
 
 
 function LoginPage() {
@@ -151,60 +170,6 @@ function LoginPage() {
 
 
 
-    const fetchPlatforms = async () => {
-      try {
-        //old await fetchPlatformsFromRawG();
-        const Platforms = await getPlatforms();
-        setPlatforms(Platforms);
-      } catch (error) {
-        console.error('Failed to fetch Platforms:', error);
-      }
-    };
-
-
-    const fetchPlatformsFromRawG = async () => {
-      try {
-        let rawGPlatformssList = {
-          next: null
-        };
-        do {
-          rawGPlatformssList = await getPlatformsFromRawG(rawGPlatformssList.next);
-          await postRawGPlatformsToDatabase(rawGPlatformssList.results);
-        } while (rawGPlatformssList.next != null);
-
-      } catch (error) {
-        console.error('Failed to fetch Platforms from rawG:', error);
-      }
-    };
-
-
-
-    const fetchGenres = async () => {
-      try {
-        // old await fetchGenresFromRawG();
-        const Genres = await getGenres();
-        setGenres(Genres);
-      } catch (error) {
-        console.error('Failed to fetch Genres:', error);
-      }
-    };
-
-    const fetchGenresFromRawG = async () => {
-      try {
-        let rawGGenresList = {
-          next: null
-        };
-        do {
-          rawGGenresList = await getGenresFromRawG(rawGGenresList.next);
-          await postRawGGenresToDatabase(rawGGenresList.results);
-        } while (rawGGenresList.next != null);
-
-      } catch (error) {
-        console.error('Failed to fetch Genres:', error);
-      }
-    };
-
-
 
 
 
@@ -233,8 +198,8 @@ function LoginPage() {
       const userObject = response.data;
 
       await fetchGames(setGames);
-      await fetchGenres();
-      await fetchPlatforms();
+      await fetchGenres(setGenres);
+      await fetchPlatforms(setPlatforms);
 
       const userGames = await fetchUserGames(userObject.user.id, setUserGames);
       await fetchGamePlatforms(userGames, setGamePlatforms);

@@ -8,8 +8,8 @@ export const getGameGenres = async (GameId) => {
 };
 
 export const postGameGenreToDatabase = async (newGameGenre) => {
-
-    await api.post(`/GameGenre`, newGameGenre);
+  const response = await api.post(`/GameGenre`, newGameGenre);
+   return response.data;
   
 };
 

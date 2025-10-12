@@ -6,6 +6,10 @@ import { getGames } from '../api/gameApi';
 import { useNavigate } from 'react-router-dom';
 import { adminSyncFromRawGGenrePlatform } from '../api/adminApi';
 import '../css/adminPage.css';
+import { useGenres } from '../context/GenreContext';
+import { usePlatforms } from '../context/PlatformContext';
+import { fetchGenres, fetchPlatforms } from '../App';
+
 
 function AdminPage() {
   const { user } = useUser();
@@ -15,6 +19,10 @@ function AdminPage() {
   const [editData, setEditData] = useState({ rating: '', reviewText: '', status: '' });
   const navigate = useNavigate();
   const [loadingSync, setLoadingSync] = useState(false);
+  const { setPlatforms } = usePlatforms();
+  const { setGenres } = useGenres();
+
+
 
   // 🧭 Load users
   const loadUsers = useCallback(async () => {
@@ -174,8 +182,9 @@ function AdminPage() {
         return;
       }
 
-
-      alert(`✅ ${ res.statusText + "  RAWG sync initiated successfully!"}`);
+      await fetchGenres(setGenres); // Refresh genres after sync
+      await fetchPlatforms(setPlatforms); // Refresh platforms after sync
+      alert(`✅ ${res.statusText + "  RAWG sync initiated successfully!"}`);
     } catch (err) {
       console.error(err);
       alert("❌ An error occurred while syncing RAWG data.");
