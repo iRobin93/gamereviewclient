@@ -92,3 +92,15 @@ export const changeUserPassword = async (userId, currentPassword, newPassword) =
     throw err;
   }
 };
+
+
+export const resendVerificationEmail = async (user) => {
+  try {
+    const response = await api.post(`/User/verify/resend`, { username: user.username });
+    return response;
+  } catch (err) {
+    throw err;
+  }
+};
+
+

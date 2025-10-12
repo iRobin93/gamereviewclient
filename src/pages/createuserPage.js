@@ -7,7 +7,9 @@ import { FaSpinner } from 'react-icons/fa';
 function CreateUserPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
     const usernameInputRef = useRef(null);
+    const emailInputRef = useRef(null);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [accountCreation, setAccountCreation] = useState(false);
@@ -31,7 +33,8 @@ function CreateUserPage() {
         setPasswordError('');
         const userInfo = {
             password: password,
-            username: username
+            username: username,
+            email: email
         }
         // Example logic — replace with actual API call or context logic
         try {
@@ -117,7 +120,9 @@ function CreateUserPage() {
                     style={{ width: "150px", height: "auto" }}
                 />
             </div>
+
             <h2 style={styles.heading}>Create New User</h2>
+
             <form onSubmit={handleCreateUser} style={styles.form}>
                 <input
                     ref={usernameInputRef}
@@ -128,6 +133,16 @@ function CreateUserPage() {
                     required
                     style={styles.input}
                     autoComplete="username"
+                />
+                <input
+                    ref={emailInputRef}
+                    type="text"
+                    placeholder="Email (for verification)"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    style={styles.input}
+                    autoComplete="email"
                 />
                 <input
                     type="password"
@@ -147,32 +162,54 @@ function CreateUserPage() {
                     style={styles.input}
                     autoComplete="new-password"
                 />
+
                 {passwordError && (
-                    <p style={{ color: 'red', marginTop: '-0.5rem', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                    <p style={{ color: "red", marginTop: "-0.5rem", marginBottom: "1rem", fontSize: "0.9rem" }}>
                         {passwordError}
                     </p>
                 )}
-                <button type="submit" disabled={accountCreation} style={accountCreation ? { ...styles.button, ...styles.buttonDisabled } : styles.button}>
+
+                <button
+                    type="submit"
+                    disabled={accountCreation}
+                    style={accountCreation ? { ...styles.button, ...styles.buttonDisabled } : styles.button}
+                >
                     {accountCreation ? (
                         <>
                             Creating account... <FaSpinner className="spin" />
                         </>
                     ) : (
-                        'Create Account'
+                        "Create Account"
                     )}
                 </button>
 
+                {/* 🔔 Email verification notice */}
+                <p
+                    style={{
+                        color: "#555",
+                        fontSize: "0.9rem",
+                        textAlign: "center",
+                        marginTop: "1rem",
+                        backgroundColor: "#f1f7ff",
+                        borderRadius: "6px",
+                        padding: "0.75rem 1rem",
+                        border: "1px solid #cce1ff",
+                    }}
+                >
+                    📧 After creating your account, you’ll receive an email with a verification link.
+                    Please check your inbox (and spam folder) before logging in.
+                </p>
             </form>
 
             <p style={styles.loginPrompt}>
-                Already have an account?{' '}
+                Already have an account?{" "}
                 <span
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate("/")}
                     style={styles.loginLink}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') navigate('/');
+                        if (e.key === "Enter" || e.key === " ") navigate("/");
                     }}
                 >
                     Login here
@@ -180,6 +217,7 @@ function CreateUserPage() {
             </p>
         </div>
     );
+
 
 }
 

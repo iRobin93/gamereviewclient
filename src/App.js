@@ -25,7 +25,7 @@ import { UserGameProvider } from './context/UserGameContext';
 import { GameGenreProvider } from './context/GameGenreContext';
 import { AchievementProvider } from './context/AchievementContext';
 import { GamePlatformProvider } from './context/GamePlatformContext';
-import { loginToSite } from './api/usersApi';
+import { loginToSite, resendVerificationEmail } from './api/usersApi';
 import { getUserGamesByUserId } from './api/userGamesApi';
 import { getGames } from './api/gameApi';
 import { getGame } from './api/gameApi';
@@ -36,7 +36,8 @@ import { getPlatforms } from './api/platformApi';
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import gameReviewLogo from "./images/gameReviewLogo.png";
-
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export const fetchUserGames = async (id, setUserGames) => {
   try {
     const userGames = await getUserGamesByUserId(id);
@@ -144,6 +145,10 @@ function LoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const usernameInputRef = useRef(null);
   const [inputFocus, setInputFocus] = React.useState({ username: false, password: false });
+  const [showVerificationPrompt, setShowVerificationPrompt] = useState(false);
+  const [resending, setResending] = useState(false);
+
+
 
   useEffect(() => {
     document.title = "Game Review";
@@ -163,16 +168,33 @@ function LoginPage() {
   }, []);
 
 
+  const handleResendVerification = async () => {
+    setResending(true);
+    try {
+      const response = await resendVerificationEmail({ username });
+
+      if (response.status === 200) {
+        const message = response.data?.message || "✅ Verification email resent! Check your inbox.";
+        toast.success(message);
+        setShowVerificationPrompt(false);
+      } else {
+        const errorMsg = response.data?.error || response.statusText || "Unknown error";
+        toast.error(`❌ Failed to resend email: ${errorMsg}`);
+      }
+    } catch (err) {
+      console.error("Resend verification error:", err);
+      toast.error("Something went wrong while resending verification email.");
+    } finally {
+      setResending(false);
+    }
+  };
+
+
+
+
 
 
   const handleLogin = async (e) => {
-
-
-
-
-
-
-
     e.preventDefault();
     if (isLoggingIn) return;
     setIsLoggingIn(true);
@@ -185,6 +207,10 @@ function LoginPage() {
         login(response.data.user, response.data.token);
         console.log("Logged in:", response.data);
         // optionally store in state/context too
+      }
+      else if (response.status === 460) {
+        setShowVerificationPrompt(true);
+        return;
       }
       else {
         const statusText = response.status ? ` ${response.status}` : "";
@@ -343,12 +369,44 @@ function LoginPage() {
           )}
         </button>
       </form>
+      {showVerificationPrompt && (
+        <div style={{
+          marginTop: "2rem",
+          textAlign: "center",
+          backgroundColor: "#f8f9fa",
+          borderRadius: "10px",
+          padding: "1.5rem",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+        }}>
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/561/561127.png"
+            alt="Verify your email"
+            style={{ width: "80px", marginBottom: "1rem" }}
+          />
+          <h4 style={{ marginBottom: "0.5rem" }}>Your account isn’t verified yet</h4>
+          <p style={{ marginBottom: "1rem", color: "#555" }}>
+            Please check your email for a verification link. Didn’t get it?
+          </p>
+          <button
+            onClick={handleResendVerification}
+            disabled={resending}
+            style={{
+              ...styles.button,
+              width: "auto",
+              padding: "0.5rem 1.5rem",
+            }}
+          >
+            {resending ? "Resending..." : "Resend Verification Email"}
+          </button>
+        </div>
+      )}
 
       <div style={styles.createUserLink}>
         <Link to="/createuserPage" style={{ color: 'inherit', textDecoration: 'inherit' }}>
           Create User
         </Link>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
 
   );
