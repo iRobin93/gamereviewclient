@@ -272,8 +272,8 @@ function GameListPage() {
   };
 
   const handleSubmitPasswordChange = async () => {
-    if (newPassword.trim().length < 4) {
-      alert("New password must be at least 4 characters long.");
+    if (newPassword.trim().length < 1) {
+      alert("New password must be at least 1 characters long.");
       return;
     }
 
