@@ -19,7 +19,7 @@ function GameListPage() {
   const [filterShow, setFilterShow] = useState(false);
   const navigate = useNavigate();
   const [editingStatusId, setEditingStatusId] = useState(null);
-  const { games } = useGames();
+  const { games, setGames } = useGames();
   const { usergames, setUserGames } = useUserGames();
   const { gamegenres, setGameGenres } = useGameGenres();
   const { gameplatforms, setGamePlatforms } = useGamePlatforms();
@@ -157,6 +157,8 @@ function GameListPage() {
     const deleted = deleteUserGameFromUserGamesList(usergameid, title, gameid);
     if (deleted) {
       deleteUserGameFromDatabase(usergameid);
+      setGames(prev => prev.map(g => g.id === gameid ? { ...g, userGameCount: g.userGameCount - 1 } : g));
+
     }
 
 

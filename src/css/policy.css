@@ -1,0 +1,32 @@
+.policy-container {
+  max-width: 800px;
+  margin: 4rem auto;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+  color: #222;
+  line-height: 1.6;
+}
+
+.policy-container h1 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+}
+
+.footer {
+  text-align: center;
+  margin: 2rem 0;
+  color: #666;
+}
+
+.footer-link {
+  margin-left: 0.5rem;
+  color: #0077cc;
+  text-decoration: none;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}

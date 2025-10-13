@@ -38,6 +38,9 @@ import { Link } from 'react-router-dom';
 import gameReviewLogo from "./images/gameReviewLogo.png";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import TermsOfUsePage from "./pages/TermsOfUsePage";
+
 export const fetchUserGames = async (id, setUserGames) => {
   try {
     const userGames = await getUserGamesByUserId(id);
@@ -405,6 +408,13 @@ function LoginPage() {
           Create User
         </Link>
       </div>
+      <footer className="footer">
+        <p>
+          © {new Date().getFullYear()} GameReview ·
+          <Link to="/privacy" className="footer-link"> Privacy Policy</Link> ·
+          <Link to="/terms" className="footer-link"> Terms of Use</Link>
+        </p>
+      </footer>
     </div>
 
   );
@@ -432,7 +442,9 @@ function App() {
                           <Route path="/createuserpage" element={<CreateUserPage />} />
                           <Route path="/reviews/:gameId" element={<ViewReviewPage />} />
                           <Route path="/adminpage" element={<AdminPage />} />
-                          
+                          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                          <Route path="/terms" element={<TermsOfUsePage />} />
+
                         </Routes>
                       </Router>
                     </GameProvider>

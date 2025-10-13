@@ -417,7 +417,7 @@ function AddGamePage() {
                           };
                           await postUserGameToDatabase(newUserGame);
                           setUserGames([...usergames, newUserGame]);
-
+                          setGames(prev => prev.map(g => g.id === gameObject.id ? { ...g, userGameCount: g.userGameCount + 1 } : g));
                           if (createGenreAndPlatforms) {
                             if (rawGGame.platforms) {
                               await createGamePlatforms(
@@ -600,6 +600,7 @@ function AddGamePage() {
                         };
                         await postUserGameToDatabase(newUserGame);
                         setUserGames([...usergames, newUserGame]);
+                        setGames(prev => prev.map(g => g.id === game.id ? { ...g, userGameCount: g.userGameCount + 1 } : g));
 
                         const newGameGenres = await getGameGenres(
                           newUserGame.game_id

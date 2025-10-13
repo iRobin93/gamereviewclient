@@ -6,7 +6,7 @@ import gameReviewLogo from "../images/gameReviewLogo.png";
 import { FaSpinner } from 'react-icons/fa';
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import { Link } from 'react-router-dom';
 function CreateUserPage() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -50,13 +50,13 @@ function CreateUserPage() {
 
         }
         catch (err) {
-           
+
             // ❌ Error toast
             toast.error(`❌ ${err.response?.data || err.message || "Account creation failed."}`, {
                 position: "top-center",
                 autoClose: 5000,
             });
-             setAccountCreation(false);
+            setAccountCreation(false);
             return;
         }
         finally {
@@ -230,6 +230,13 @@ function CreateUserPage() {
                     Login here
                 </span>
             </p>
+            <footer className="footer">
+                <p>
+                    © {new Date().getFullYear()} GameReview ·
+                    <Link to="/privacy" className="footer-link"> Privacy Policy</Link> ·
+                    <Link to="/terms" className="footer-link"> Terms of Use</Link>
+                </p>
+            </footer>
         </div>
     );
 }
