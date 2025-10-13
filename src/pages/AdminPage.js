@@ -144,8 +144,7 @@ function AdminPage() {
         favourite: review.favourite,
         status: review.status
       };
-
-      console.log('PUT payload:', updated); // 👈 check this in console
+      
       await putUserGameToDatabase(review.id, updated);
 
       setReviews(prev =>

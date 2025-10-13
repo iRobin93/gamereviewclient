@@ -205,7 +205,6 @@ function LoginPage() {
 
       if (response.success) {
         login(response.data.user, response.data.token);
-        console.log("Logged in:", response.data);
         // optionally store in state/context too
       }
       else if (response.status === 460) {
