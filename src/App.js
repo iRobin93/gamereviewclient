@@ -293,13 +293,24 @@ function LoginPage() {
       backgroundColor: '#6c757d',
       cursor: 'not-allowed',
     },
-    createUserLink: {
-      marginTop: '1rem',
+
+    // ✅ Replace old createUserLink with this trio:
+    createUserContainer: {
+      marginTop: '1.5rem',
       textAlign: 'center',
-      color: '#007bff',
-      textDecoration: 'underline',
-      cursor: 'pointer',
     },
+    createUserText: {
+      fontSize: '0.95rem',
+      color: '#555',
+      margin: 0,
+    },
+    createUserLink: {
+      color: '#007bff',
+      textDecoration: 'none',
+      fontWeight: '500',
+      transition: 'color 0.2s ease',
+    },
+
     loadingContainer: {
       display: 'flex',
       flexDirection: 'column',
@@ -402,12 +413,17 @@ function LoginPage() {
           </button>
         </div>
       )}
-
-      <div style={styles.createUserLink}>
-        <Link to="/createuserPage" style={{ color: 'inherit', textDecoration: 'inherit' }}>
-          Create User
-        </Link>
+      <div style={styles.createUserContainer}>
+        <p style={styles.createUserText}>
+          Don’t have an account?{" "}
+          <Link to="/createuserPage" style={styles.createUserLink}>
+            Create one
+          </Link>
+        </p>
       </div>
+
+
+
       <footer className="footer">
         <p>
           © {new Date().getFullYear()} GameReview ·

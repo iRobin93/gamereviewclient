@@ -122,6 +122,31 @@ function CreateUserPage() {
             cursor: 'pointer',
             outline: 'none',
             userSelect: 'none',
+            transition: 'color 0.2s ease',
+        },
+        // ✅ Replace old createUserLink with this trio:
+        createUserContainer: {
+            marginTop: '1.5rem',
+            textAlign: 'center',
+        },
+        createUserText: {
+            fontSize: '0.95rem',
+            color: '#555',
+            margin: 0,
+        },
+        createUserLink: {
+            color: '#007bff',
+            textDecoration: 'none',
+            fontWeight: '500',
+            transition: 'color 0.2s ease',
+        },
+
+        loadingContainer: {
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            marginTop: '4rem',
+            color: '#666',
         },
     };
 
@@ -216,20 +241,14 @@ function CreateUserPage() {
                 </p>
             </form>
 
-            <p style={styles.loginPrompt}>
-                Already have an account?{" "}
-                <span
-                    onClick={() => navigate("/")}
-                    style={styles.loginLink}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") navigate("/");
-                    }}
-                >
-                    Login here
-                </span>
-            </p>
+            <div style={styles.loginPrompt}>
+                <p style={styles.createUserText}>
+                    Already have an account?{" "}
+                    <Link to="/" style={styles.createUserLink}>
+                        Login here
+                    </Link>
+                </p>
+            </div>
             <footer className="footer">
                 <p>
                     © {new Date().getFullYear()} GameReview ·
